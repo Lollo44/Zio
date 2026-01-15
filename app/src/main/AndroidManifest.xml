@@ -6,9 +6,9 @@
 
     <application
         android:allowBackup="true"
-        android:label="Superman Workfit"
+        android:label="Nonno Workout"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SupermanWorkfit">
+        android:theme="@style/Theme.NonnoWorkout">
         <activity
             android:name=".MainActivity"
             android:exported="true">

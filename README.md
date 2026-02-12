@@ -1,4 +1,4 @@
-# Nonno Workout (SeniorFit Tracker)
+# Walter the Walker (Fit Tracker)
 
 App Android per monitorare camminate, circuito pesi e statistiche per persone senior.
 

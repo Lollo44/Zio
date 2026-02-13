@@ -52,7 +52,7 @@ const SfidePage = () => {
           <h1 className="text-2xl font-extrabold font-heading text-text-primary">Sfide Goat</h1>
           <p className="text-text-secondary text-sm mt-1">Le sfide di Walt the GOAT!</p>
         </div>
-        <WaltTheGoat state="flexing" size={80} />
+        <WaltTheGoat state="trophy" size={80} />
       </div>
 
       {/* Completed count */}

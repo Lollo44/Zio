@@ -498,6 +498,109 @@ const CircuitPage = () => {
           </div>
         </div>
       )}
+
+      {/* Smart Swap Modal */}
+      {swapModal && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-end justify-center" onClick={() => setSwapModal(null)}>
+          <div className="bg-surface border-t border-border rounded-t-3xl w-full max-w-md max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-surface p-4 border-b border-border flex items-center justify-between">
+              <div>
+                <h3 className="text-text-primary font-bold">Sostituisci esercizio</h3>
+                <p className="text-text-secondary text-sm">Scegli un'alternativa per {swapModal.original?.nome}</p>
+              </div>
+              <button onClick={() => setSwapModal(null)} className="text-text-secondary"><X size={20} /></button>
+            </div>
+            <div className="p-4 space-y-2">
+              {swapModal.alternatives?.length > 0 ? (
+                swapModal.alternatives.map((alt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => swapExercise(swapModal.exId, alt)}
+                    className="w-full bg-surface-highlight border border-border rounded-2xl p-4 text-left hover:border-primary/50 transition-colors"
+                    data-testid={`swap-option-${i}`}
+                  >
+                    <p className="text-text-primary font-bold">{alt.nome}</p>
+                    <p className="text-primary text-xs">{alt.categoria}</p>
+                    <p className="text-text-secondary text-xs mt-1 line-clamp-2">{alt.descrizione_tecnica}</p>
+                    <p className="text-text-secondary text-xs mt-1">
+                      {alt.serie_default}x{alt.ripetizioni_default} · {alt.peso_default > 0 ? `${alt.peso_default}kg` : 'Corpo libero'}
+                    </p>
+                  </button>
+                ))
+              ) : (
+                <p className="text-text-secondary text-center py-4">Nessuna alternativa disponibile</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exercise Info Modal */}
+      {exerciseInfo && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6" onClick={() => setExerciseInfo(null)}>
+          <div className="bg-surface border border-border rounded-3xl w-full max-w-md max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-surface p-4 border-b border-border flex items-center justify-between">
+              <div>
+                <h3 className="text-text-primary font-bold">{exerciseInfo.nome}</h3>
+                <p className="text-primary text-sm">{exerciseInfo.categoria}</p>
+              </div>
+              <button onClick={() => setExerciseInfo(null)} className="text-text-secondary"><X size={20} /></button>
+            </div>
+            <div className="p-4 space-y-4">
+              {exerciseInfo.descrizione_tecnica && (
+                <div>
+                  <p className="text-text-secondary text-xs font-bold mb-1">Esecuzione</p>
+                  <p className="text-text-primary text-sm">{exerciseInfo.descrizione_tecnica}</p>
+                </div>
+              )}
+              {exerciseInfo.gruppo_muscolare && (
+                <div>
+                  <p className="text-text-secondary text-xs font-bold mb-1">Muscoli target</p>
+                  <div className="flex flex-wrap gap-1">
+                    {(Array.isArray(exerciseInfo.gruppo_muscolare) ? exerciseInfo.gruppo_muscolare : [exerciseInfo.gruppo_muscolare]).map((m, i) => (
+                      <span key={i} className="bg-primary/20 text-primary rounded-full px-2 py-0.5 text-xs">{m}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {exerciseInfo.attrezzi && (
+                <div>
+                  <p className="text-text-secondary text-xs font-bold mb-1">Attrezzi</p>
+                  <p className="text-text-primary text-sm">{Array.isArray(exerciseInfo.attrezzi) ? exerciseInfo.attrezzi.join(', ') : exerciseInfo.attrezzi}</p>
+                </div>
+              )}
+              {exerciseInfo.note_sicurezza && (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3">
+                  <p className="text-yellow-400 text-xs font-bold mb-1">⚠️ Sicurezza</p>
+                  <p className="text-yellow-300 text-sm">{exerciseInfo.note_sicurezza}</p>
+                </div>
+              )}
+              {exerciseInfo.varianti && (
+                <div>
+                  <p className="text-text-secondary text-xs font-bold mb-1">Varianti</p>
+                  <div className="space-y-1">
+                    {Object.entries(exerciseInfo.varianti).map(([level, desc]) => (
+                      <div key={level} className="flex gap-2 text-sm">
+                        <span className={`font-bold ${level === 'facile' ? 'text-green-400' : level === 'medio' ? 'text-yellow-400' : 'text-red-400'}`}>
+                          {level.charAt(0).toUpperCase() + level.slice(1)}:
+                        </span>
+                        <span className="text-text-secondary">{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="bg-surface-highlight rounded-xl p-3">
+                <p className="text-text-secondary text-xs font-bold mb-1">Default</p>
+                <p className="text-text-primary text-sm">
+                  {exerciseInfo.serie_default || 3}x{exerciseInfo.ripetizioni_default || 12}
+                  {exerciseInfo.peso_default > 0 ? ` @ ${exerciseInfo.peso_default}kg` : ' (corpo libero)'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

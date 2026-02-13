@@ -15,7 +15,7 @@ load_dotenv()
 app = FastAPI(title="Walter the Walker API")
 
 # Get allowed origins from environment or use default localhost origins
-allowed_origins = os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+allowed_origins = [origin.strip() for origin in os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")]
 
 app.add_middleware(
     CORSMiddleware,

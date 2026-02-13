@@ -10,3 +10,37 @@ __pycache__/
 
 # Test artifacts
 .pytest_cache/
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+build/
+dist/
+frontend/build/
+# Gradle
+.gradle/
+build/
+*/build/
+.gradletasknamecache
+
+# Android
+*.apk
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+out/
+captures/
+.externalNativeBuild
+.cxx
+local.properties
+
+# IntelliJ
+*.iml
+.idea/
+
+# Misc
+.DS_Store
+*.log

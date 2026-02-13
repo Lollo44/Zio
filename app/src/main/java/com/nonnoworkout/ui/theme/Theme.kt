@@ -4,7 +4,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
@@ -28,5 +27,4 @@ fun NonnoWorkoutTheme(content: @Composable () -> Unit) {
     )
 }
 
-@Immutable
 private val Typography = androidx.compose.material3.Typography()

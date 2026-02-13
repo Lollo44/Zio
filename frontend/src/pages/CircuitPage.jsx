@@ -168,6 +168,58 @@ const CircuitPage = () => {
     } catch (err) { console.error(err); }
   };
 
+  // Smart Swap - fetch alternatives for an exercise
+  const fetchAlternatives = async (exId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/exercises/${exId}/alternatives`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setSwapModal({ exId, original: data.esercizio_originale, alternatives: data.alternative });
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  // Swap exercise in logs
+  const swapExercise = (oldExId, newEx) => {
+    setLogs(prev => {
+      const newLogs = { ...prev };
+      const oldLog = newLogs[oldExId];
+      const numSerie = newEx.serie_default || oldLog.piano_serie || 3;
+      const reps = newEx.ripetizioni_default || oldLog.piano_ripetizioni || 12;
+      const peso = newEx.peso_default || 0;
+      
+      // Remove old exercise
+      delete newLogs[oldExId];
+      
+      // Add new exercise with same position
+      const newExId = newEx.exercise_id;
+      const sets = [];
+      for (let i = 0; i < numSerie; i++) {
+        sets.push({ set_number: i + 1, ripetizioni: reps, peso_kg: peso, completato: false });
+      }
+      newLogs[newExId] = {
+        nome: newEx.nome,
+        exercise_id: newExId,
+        categoria: newEx.categoria,
+        descrizione: newEx.descrizione_tecnica,
+        note: newEx.note_sicurezza,
+        sets,
+        piano_serie: numSerie,
+        piano_ripetizioni: reps,
+        piano_peso_kg: peso,
+      };
+      return newLogs;
+    });
+    setSwapModal(null);
+  };
+
+  // Show exercise info modal
+  const showExerciseInfo = (ex) => {
+    // Find full exercise details from exercises list
+    const fullEx = exercises.find(e => e.exercise_id === ex.exercise_id);
+    setExerciseInfo(fullEx || ex);
+  };
+
   const totalSetsCompleted = Object.values(logs).reduce((acc, l) => acc + l.sets.filter(s => s.completato).length, 0);
   const totalSets = Object.values(logs).reduce((acc, l) => acc + l.sets.length, 0);
 

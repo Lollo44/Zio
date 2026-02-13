@@ -244,15 +244,14 @@ class WalterAPITester:
         # Run all endpoint tests
         tests = [
             self.test_auth_me_without_token,
-            # Skip token-based tests for now since we don't have real session
-            # self.test_auth_me_with_token,
-            # self.test_profile_endpoints,
-            # self.test_walks_endpoints,
-            # self.test_circuits_endpoints,
-            # self.test_exercises_endpoint,
-            # self.test_plans_endpoints,
-            # self.test_stats_endpoint,
-            # self.test_logout
+            self.test_auth_me_with_token,
+            self.test_profile_endpoints,
+            self.test_walks_endpoints,
+            self.test_circuits_endpoints,
+            self.test_exercises_endpoint,
+            self.test_plans_endpoints,
+            self.test_stats_endpoint,
+            self.test_logout
         ]
         
         for test in tests:

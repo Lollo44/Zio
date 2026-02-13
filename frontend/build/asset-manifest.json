@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/pod-backups/seniorfit/build/static/css/main.d4e29e8f.css",
+    "main.js": "/pod-backups/seniorfit/build/static/js/main.46c0db56.js",
+    "static/js/228.c433daa9.chunk.js": "/pod-backups/seniorfit/build/static/js/228.c433daa9.chunk.js",
+    "static/css/433.cad63971.chunk.css": "/pod-backups/seniorfit/build/static/css/433.cad63971.chunk.css",
+    "static/js/433.7bc76061.chunk.js": "/pod-backups/seniorfit/build/static/js/433.7bc76061.chunk.js",
+    "index.html": "/pod-backups/seniorfit/build/index.html",
+    "main.d4e29e8f.css.map": "/pod-backups/seniorfit/build/static/css/main.d4e29e8f.css.map",
+    "main.46c0db56.js.map": "/pod-backups/seniorfit/build/static/js/main.46c0db56.js.map",
+    "228.c433daa9.chunk.js.map": "/pod-backups/seniorfit/build/static/js/228.c433daa9.chunk.js.map",
+    "433.cad63971.chunk.css.map": "/pod-backups/seniorfit/build/static/css/433.cad63971.chunk.css.map",
+    "433.7bc76061.chunk.js.map": "/pod-backups/seniorfit/build/static/js/433.7bc76061.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d4e29e8f.css",
+    "static/js/main.46c0db56.js"
+  ]
+}

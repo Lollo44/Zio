@@ -301,38 +301,90 @@ async def create_plan(request: Request, plan: PlanCreate):
     plan_doc.pop("_id", None)
     return plan_doc
 
+class WorkoutGeneratorInput(BaseModel):
+    energia: int = 5  # 1-10
+    focus_muscolare: Optional[List[str]] = None  # e.g., ["Gambe", "Core"]
+    dolori_articolari: Optional[List[str]] = None  # e.g., ["ginocchia", "spalle"]
+
 @app.post("/api/plans/generate")
-async def generate_plan(request: Request):
+async def generate_plan(request: Request, inputs: Optional[WorkoutGeneratorInput] = None):
     user = await get_current_user(request)
     livello = user.get("livello", "Principiante")
     giorni = user.get("giorni_disponibili", ["Lunedì", "Mercoledì", "Venerdì"])
     eta = user.get("eta", 72)
-    exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
-    if not exercises:
-        for ex in DEFAULT_EXERCISES:
+    
+    # Seed exercises if needed
+    count = await db.exercises.count_documents({})
+    if count == 0:
+        for ex in ESERCIZI_DATABASE:
             await db.exercises.insert_one(ex.copy())
-        exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
+    
+    exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
+    
+    # Apply energy level adjustments
+    energia = inputs.energia if inputs else 5
+    serie_mod = -1 if energia < 4 else (1 if energia > 7 else 0)
+    
+    # Filter by focus if specified
+    focus = inputs.focus_muscolare if inputs else None
+    dolori = inputs.dolori_articolari if inputs else []
+    
+    # Exercises to avoid based on joint pain
+    avoid_exercises = set()
+    if "ginocchia" in dolori:
+        avoid_exercises.update(["ex_squat_sedia", "ex_affondi_supporto", "ex_step_up"])
+    if "spalle" in dolori:
+        avoid_exercises.update(["ex_shoulder_press", "ex_alzate_laterali", "ex_alzate_frontali"])
+    if "schiena" in dolori:
+        avoid_exercises.update(["ex_rematore_manubri", "ex_superman"])
+    
     plan_giorni = []
-    weight_exercises = [e for e in exercises if e["tipo"] == "pesi"]
     for i, giorno in enumerate(giorni):
         if i % 2 == 0:
-            dur = 30 if livello == "Principiante" else 45
-            dist = 2.0 if livello == "Principiante" else 3.5
+            # Walking day
+            dur = 25 if energia < 4 else (35 if energia > 7 else 30)
+            if livello != "Principiante":
+                dur += 10
+            dist = round(dur * 0.08, 1)  # ~5 km/h average
             plan_giorni.append({
                 "giorno": giorno, "tipo": "camminata",
                 "attivita": [{"nome": "Camminata", "durata_minuti": dur, "distanza_km": dist, "note": "Passo moderato"}],
             })
         else:
-            selected = weight_exercises[:5] if len(weight_exercises) >= 5 else weight_exercises
-            serie_mult = 2 if livello == "Principiante" else 3
+            # Circuit day - select exercises by category rotation
+            if focus:
+                available = [e for e in exercises 
+                           if e.get("categoria") in focus 
+                           and e.get("exercise_id") not in avoid_exercises]
+            else:
+                # Default rotation through categories
+                categorie_rotazione = ["Gambe", "Core", "Braccia", "Spalle", "Petto", "Schiena"]
+                cat_oggi = categorie_rotazione[(i // 2) % len(categorie_rotazione)]
+                cat_secondaria = categorie_rotazione[((i // 2) + 1) % len(categorie_rotazione)]
+                available = [e for e in exercises 
+                           if e.get("categoria") in [cat_oggi, cat_secondaria, "Cardio"]
+                           and e.get("exercise_id") not in avoid_exercises]
+            
+            # Select exercises based on level
+            num_esercizi = 4 if livello == "Principiante" else 6
+            selected = available[:num_esercizi] if len(available) >= num_esercizi else available
+            
+            # Adjust series based on level and energy
+            base_serie = 2 if livello == "Principiante" else 3
+            serie_finale = max(1, base_serie + serie_mod)
+            
             plan_giorni.append({
                 "giorno": giorno, "tipo": "circuito",
                 "attivita": [{
-                    "exercise_id": ex["exercise_id"], "nome": ex["nome"],
-                    "serie": min(serie_mult, ex.get("serie_default", 2)),
-                    "ripetizioni": min(10, ex.get("ripetizioni_default", 10)),
-                    "peso_kg": ex.get("peso_default", 1.0),
-                    "note": ex.get("descrizione", ""),
+                    "exercise_id": ex["exercise_id"], 
+                    "nome": ex["nome"],
+                    "categoria": ex.get("categoria", ""),
+                    "serie": min(serie_finale, ex.get("serie_default", 3)),
+                    "ripetizioni": ex.get("ripetizioni_default", 12),
+                    "peso_kg": ex.get("peso_default", 0),
+                    "descrizione": ex.get("descrizione_tecnica", ""),
+                    "note": ex.get("note_sicurezza", ""),
+                    "varianti": ex.get("varianti", {}),
                 } for ex in selected],
             })
     plan_doc = {

@@ -275,7 +275,8 @@ class WalterAPITester:
         if failed_tests:
             print("\n❌ Failed Tests:")
             for test in failed_tests:
-                print(f"  - {test['test']}: {test['error'] or f'Status {test['status_code']}'}")
+                error_msg = test['error'] or f"Status {test['status_code']}"
+                print(f"  - {test['test']}: {error_msg}")
         
         return self.tests_passed == self.tests_run
 

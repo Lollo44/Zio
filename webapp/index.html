@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#1E88E5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Walter the Walker</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ========== ONBOARDING ========== -->
+<div id="onboarding">
+  <h1>🚶 Walter the Walker</h1>
+  <p class="subtitle">Il tuo compagno di fitness quotidiano</p>
+  <form id="onboarding-form" class="card">
+    <div class="form-group">
+      <label for="input-age">Età</label>
+      <input type="number" id="input-age" placeholder="Es. 65" min="18" max="120" required>
+    </div>
+    <div class="form-group">
+      <label for="input-weight">Peso (kg)</label>
+      <input type="number" id="input-weight" placeholder="Es. 75" min="30" max="250" required>
+    </div>
+    <div class="form-group">
+      <label for="input-level">Livello</label>
+      <select id="input-level">
+        <option value="principiante">Principiante</option>
+        <option value="intermedio">Intermedio</option>
+        <option value="avanzato">Avanzato</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Obiettivi</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="goal" value="salute"><span>Salute</span></label>
+        <label><input type="checkbox" name="goal" value="peso"><span>Perdere peso</span></label>
+        <label><input type="checkbox" name="goal" value="forza"><span>Forza</span></label>
+        <label><input type="checkbox" name="goal" value="resistenza"><span>Resistenza</span></label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Giorni disponibili</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="day" value="Lunedì"><span>Lun</span></label>
+        <label><input type="checkbox" name="day" value="Martedì"><span>Mar</span></label>
+        <label><input type="checkbox" name="day" value="Mercoledì"><span>Mer</span></label>
+        <label><input type="checkbox" name="day" value="Giovedì"><span>Gio</span></label>
+        <label><input type="checkbox" name="day" value="Venerdì"><span>Ven</span></label>
+        <label><input type="checkbox" name="day" value="Sabato"><span>Sab</span></label>
+        <label><input type="checkbox" name="day" value="Domenica"><span>Dom</span></label>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Iniziamo! 🚀</button>
+  </form>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="app-main" class="hidden">
+
+  <!-- HOME -->
+  <div id="page-home" class="page container">
+    <div class="greeting">Ciao! Walter the Walker 🚶</div>
+    <p id="home-date" style="color:var(--text2);margin-bottom:16px"></p>
+
+    <div class="today-plan">
+      <h3>📋 Piano di oggi</h3>
+      <p id="today-plan-text">Nessun piano attivo</p>
+    </div>
+
+    <div class="walk-stats mt-16">
+      <div class="stat-box">
+        <div class="value" id="home-walks">0</div>
+        <div class="label">Camminate totali</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="home-distance">0 km</div>
+        <div class="label">Distanza totale</div>
+      </div>
+    </div>
+
+    <div class="home-actions">
+      <div class="btn-group">
+        <button id="btn-start-walk" class="btn btn-secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 5l-2.8 14h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.9-.8"/></svg>
+          Camminata
+        </button>
+        <button id="btn-start-circuit" class="btn btn-tertiary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+          Circuito
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WALK -->
+  <div id="page-walk" class="page container hidden">
+    <h2>🚶 Camminata</h2>
+    <div class="card">
+      <div class="timer-display" id="walk-timer">00:00:00</div>
+      <div class="walk-stats">
+        <div class="stat-box">
+          <div class="value" id="walk-steps">0</div>
+          <div class="label">Passi</div>
+        </div>
+        <div class="stat-box">
+          <div class="value" id="walk-distance">0.00</div>
+          <div class="label">Distanza (km)</div>
+        </div>
+        <div class="stat-box">
+          <div class="value" id="walk-speed">0.0</div>
+          <div class="label">Velocità (km/h)</div>
+        </div>
+        <div class="stat-box">
+          <div class="value" style="font-size:1.2rem">⏱️</div>
+          <div class="label">In corso</div>
+        </div>
+      </div>
+      <div class="walk-controls">
+        <button id="walk-btn-start" class="btn-icon btn-primary" title="Avvia">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button id="walk-btn-pause" class="btn-icon btn-tertiary hidden" title="Pausa">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button id="walk-btn-stop" class="btn-icon hidden" title="Stop" style="background:#E53935;color:#fff">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CIRCUIT -->
+  <div id="page-circuit" class="page container hidden">
+    <h2>🏋️ Circuito pesi</h2>
+    <div class="card">
+      <div class="exercise-progress" id="circuit-progress">Esercizio 1 di 8</div>
+      <div class="exercise-name" id="circuit-exercise">Bicipiti</div>
+      <div class="circuit-timer" id="circuit-timer">00:00</div>
+      <div class="divider"></div>
+      <div class="circuit-inputs">
+        <div class="form-group">
+          <label for="circuit-series">Serie</label>
+          <input type="number" id="circuit-series" placeholder="3" min="0">
+        </div>
+        <div class="form-group">
+          <label for="circuit-reps">Ripetizioni</label>
+          <input type="number" id="circuit-reps" placeholder="12" min="0">
+        </div>
+        <div class="form-group">
+          <label for="circuit-weight">Peso (kg)</label>
+          <input type="number" id="circuit-weight" placeholder="5" min="0" step="0.5">
+        </div>
+      </div>
+      <div class="walk-controls" style="flex-wrap:wrap">
+        <button id="circuit-btn-start" class="btn-icon btn-secondary" title="Avvia">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button id="circuit-btn-pause" class="btn-icon btn-tertiary hidden" title="Pausa">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button id="circuit-btn-next" class="btn-icon btn-primary hidden" title="Prossimo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>
+        </button>
+        <button id="circuit-btn-stop" class="btn-icon hidden" title="Stop" style="background:#E53935;color:#fff">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLANS -->
+  <div id="page-plans" class="page container hidden">
+    <h2>📋 Piani</h2>
+    <div class="tabs">
+      <button class="tab plan-tab active" data-tab="auto">Automatici</button>
+      <button class="tab plan-tab" data-tab="custom">Personalizzati</button>
+    </div>
+
+    <!-- Auto plans -->
+    <div id="plans-auto">
+      <button id="btn-generate-plan" class="btn btn-primary mb-16">Genera piano settimanale</button>
+      <div id="auto-plan-list"></div>
+    </div>
+
+    <!-- Custom plans -->
+    <div id="plans-custom" class="hidden">
+      <div class="card">
+        <h3>Aggiungi attività</h3>
+        <div class="custom-plan-entry">
+          <select id="custom-day">
+            <option>Lunedì</option><option>Martedì</option><option>Mercoledì</option>
+            <option>Giovedì</option><option>Venerdì</option><option>Sabato</option><option>Domenica</option>
+          </select>
+          <input type="text" id="custom-activity" placeholder="Es. Camminata 30 min">
+        </div>
+        <div class="btn-group">
+          <button id="btn-add-custom" class="btn btn-secondary btn-sm">Aggiungi</button>
+          <button id="btn-activate-custom" class="btn btn-primary btn-sm">Attiva piano</button>
+        </div>
+      </div>
+      <div id="custom-plan-list" class="mt-16"></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div id="page-stats" class="page container hidden">
+    <h2>📊 Statistiche</h2>
+    <div class="tabs">
+      <button class="tab stats-tab active" data-period="week">Settimana</button>
+      <button class="tab stats-tab" data-period="month">Mese</button>
+      <button class="tab stats-tab" data-period="total">Totale</button>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-walks">0</div>
+        <div class="stat-label">Camminate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-distance">0 km</div>
+        <div class="stat-label">Distanza</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-time">00:00:00</div>
+        <div class="stat-label">Tempo totale</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-circuits">0</div>
+        <div class="stat-label">Allenamenti</div>
+      </div>
+      <div class="stat-card highlight">
+        <div class="stat-value" id="stat-best">—</div>
+        <div class="stat-label">Miglior camminata</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app-main -->
+
+<!-- ========== BOTTOM NAV ========== -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="nav-item active" data-section="home">
+    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="nav-item" data-section="walk">
+    <svg viewBox="0 0 24 24"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 5l-2.8 14h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.9-.8"/></svg>
+    <span>Camminata</span>
+  </button>
+  <button class="nav-item" data-section="circuit">
+    <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+    <span>Circuito</span>
+  </button>
+  <button class="nav-item" data-section="plans">
+    <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+    <span>Piani</span>
+  </button>
+  <button class="nav-item" data-section="stats">
+    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+    <span>Statistiche</span>
+  </button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>

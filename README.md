@@ -1,12 +1,13 @@
 # Walter the Walker (Fit Tracker)
 
-App Android per monitorare camminate, circuito pesi e statistiche per persone senior.
+App per monitorare camminate, circuito pesi e statistiche per persone senior.
+Disponibile in due versioni: **Android** e **Webapp**.
 
 ## Moduli principali
-- Camminata con GPS e contapassi
-- Circuito pesi con registrazione serie/ripetizioni/peso
+- Camminata con GPS e contapassi (timer, distanza, velocità, passi)
+- Circuito pesi con registrazione serie/ripetizioni/peso (8 esercizi)
 - Piani di allenamento automatici e personalizzati
-- Statistiche e grafici di miglioramento
+- Statistiche per periodo (settimana/mese/totale)
 
 ## Come avviare
 

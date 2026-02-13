@@ -1,0 +1,179 @@
+/* === Walter the Walker — PWA Styles === */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1E88E5;--primary-light:#64B5F6;--primary-dark:#1565C0;
+  --secondary:#43A047;--secondary-light:#81C784;
+  --tertiary:#FFA000;--tertiary-light:#FFD54F;
+  --bg:#F5F5F5;--surface:#FFFFFF;--text:#212121;--text2:#616161;
+  --shadow:0 2px 8px rgba(0,0,0,.12);--shadow-lg:0 4px 16px rgba(0,0,0,.16);
+  --radius:16px;--radius-sm:12px;
+  --nav-h:64px;
+}
+html{font-size:18px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.5;
+  max-width:480px;margin:0 auto;min-height:100vh;position:relative;
+  padding-bottom:calc(var(--nav-h) + 16px);
+}
+
+/* ---- Utilities ---- */
+.hidden{display:none!important}
+.container{padding:16px}
+h1{font-size:1.5rem;font-weight:700}
+h2{font-size:1.25rem;font-weight:600;margin-bottom:12px}
+h3{font-size:1.1rem;font-weight:600;margin-bottom:8px}
+
+/* ---- Cards ---- */
+.card{
+  background:var(--surface);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px;margin-bottom:16px;
+}
+.card-accent{border-left:4px solid var(--primary)}
+
+/* ---- Buttons ---- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:var(--radius-sm);cursor:pointer;
+  font-size:1rem;font-weight:600;padding:14px 24px;
+  transition:background .2s,transform .1s;width:100%;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:var(--secondary);color:#fff}
+.btn-secondary:hover{background:#388E3C}
+.btn-tertiary{background:var(--tertiary);color:#fff}
+.btn-tertiary:hover{background:#FF8F00}
+.btn-outline{background:transparent;border:2px solid var(--primary);color:var(--primary)}
+.btn-sm{padding:10px 16px;font-size:.9rem}
+.btn-icon{width:56px;height:56px;border-radius:50%;padding:0;font-size:1.4rem}
+.btn-group{display:flex;gap:12px;margin-top:12px}
+.btn-group .btn{flex:1}
+
+/* ---- Forms ---- */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-weight:600;margin-bottom:6px;color:var(--text2)}
+.form-group input,.form-group select{
+  width:100%;padding:14px;border:2px solid #E0E0E0;border-radius:var(--radius-sm);
+  font-size:1rem;background:var(--surface);color:var(--text);
+  transition:border-color .2s;
+}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary)}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:8px}
+.checkbox-group label{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 14px;border:2px solid #E0E0E0;border-radius:var(--radius-sm);
+  cursor:pointer;font-weight:500;transition:all .2s;
+}
+.checkbox-group input:checked+span{color:var(--primary)}
+.checkbox-group label:has(input:checked){border-color:var(--primary);background:#E3F2FD}
+.checkbox-group input{width:auto;accent-color:var(--primary)}
+
+/* ---- Bottom Navigation ---- */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;height:var(--nav-h);
+  background:var(--surface);box-shadow:0 -2px 12px rgba(0,0,0,.1);
+  display:flex;z-index:100;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;color:var(--text2);text-decoration:none;font-size:.65rem;font-weight:600;
+  transition:color .2s;cursor:pointer;border:none;background:none;
+  padding:4px 0;
+}
+.nav-item svg{width:26px;height:26px;fill:currentColor}
+.nav-item.active{color:var(--primary)}
+
+/* ---- Onboarding ---- */
+#onboarding{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;padding:24px;
+}
+#onboarding h1{text-align:center;margin-bottom:4px;font-size:1.7rem;color:var(--primary)}
+#onboarding .subtitle{text-align:center;color:var(--text2);margin-bottom:24px;font-size:1rem}
+
+/* ---- Home ---- */
+.greeting{font-size:1.4rem;color:var(--primary);margin-bottom:16px}
+.today-plan{padding:16px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:var(--radius)}
+.today-plan h3{color:#fff;margin-bottom:4px}
+.today-plan p{opacity:.9;font-size:.95rem}
+.home-actions{margin-top:16px}
+
+/* ---- Walk ---- */
+.timer-display{
+  text-align:center;font-size:3rem;font-weight:700;
+  font-variant-numeric:tabular-nums;color:var(--primary);
+  padding:20px 0;letter-spacing:2px;
+}
+.walk-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat-box{
+  background:var(--surface);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow);padding:16px;text-align:center;
+}
+.stat-box .value{font-size:1.6rem;font-weight:700;color:var(--primary)}
+.stat-box .label{font-size:.75rem;color:var(--text2);margin-top:2px}
+.walk-controls{display:flex;justify-content:center;gap:16px;margin-top:16px}
+
+/* ---- Circuit ---- */
+.exercise-name{
+  text-align:center;font-size:1.5rem;font-weight:700;
+  color:var(--secondary);margin:12px 0;
+}
+.exercise-progress{text-align:center;color:var(--text2);font-size:.85rem;margin-bottom:8px}
+.circuit-timer{
+  text-align:center;font-size:2.4rem;font-weight:700;
+  color:var(--secondary);font-variant-numeric:tabular-nums;padding:12px 0;
+}
+.circuit-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.circuit-inputs .form-group{margin-bottom:0}
+.circuit-inputs label{font-size:.8rem}
+.circuit-inputs input{padding:10px;text-align:center}
+
+/* ---- Plans ---- */
+.tabs{display:flex;margin-bottom:16px}
+.tab{
+  flex:1;padding:12px;text-align:center;font-weight:600;
+  border:none;background:none;color:var(--text2);cursor:pointer;
+  border-bottom:3px solid transparent;font-size:.95rem;
+}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.plan-day{margin-bottom:12px}
+.plan-day h3{color:var(--primary);font-size:1rem;margin-bottom:6px}
+.plan-activity{
+  padding:10px 14px;background:#E3F2FD;border-radius:var(--radius-sm);
+  margin-bottom:6px;font-size:.95rem;
+}
+.plan-activity.walk{background:#E8F5E9;border-left:3px solid var(--secondary)}
+.plan-activity.circuit{background:#FFF3E0;border-left:3px solid var(--tertiary)}
+.plan-activity.rest{background:#F5F5F5;border-left:3px solid #9E9E9E;color:var(--text2)}
+.custom-plan-entry{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.custom-plan-entry select,.custom-plan-entry input{
+  flex:1;min-width:0;padding:10px;border:2px solid #E0E0E0;
+  border-radius:var(--radius-sm);font-size:.9rem;
+}
+
+/* ---- Stats ---- */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat-card{
+  background:var(--surface);border-radius:var(--radius-sm);
+  box-shadow:var(--shadow);padding:16px;text-align:center;
+}
+.stat-card .stat-value{font-size:1.5rem;font-weight:700;color:var(--primary)}
+.stat-card .stat-label{font-size:.8rem;color:var(--text2);margin-top:4px}
+.stat-card.highlight{background:linear-gradient(135deg,var(--primary),var(--primary-dark));grid-column:1/-1}
+.stat-card.highlight .stat-value,.stat-card.highlight .stat-label{color:#fff}
+
+/* ---- Misc ---- */
+.badge{
+  display:inline-block;padding:4px 12px;border-radius:20px;
+  font-size:.8rem;font-weight:600;
+}
+.badge-active{background:#E8F5E9;color:var(--secondary)}
+.badge-inactive{background:#F5F5F5;color:var(--text2)}
+.divider{height:1px;background:#E0E0E0;margin:16px 0}
+.text-center{text-align:center}
+.mt-8{margin-top:8px}
+.mt-16{margin-top:16px}
+.mb-16{margin-bottom:16px}

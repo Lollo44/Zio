@@ -264,8 +264,8 @@ const WalkPage = () => {
                   {w.percorso?.length > 0 && <p className="text-primary text-xs mt-1"><MapPin size={10} className="inline" /> Percorso GPS disponibile</p>}
                 </div>
                 <div className="text-right">
-                  <p className="text-primary font-bold text-lg">{w.distanza_km} km</p>
-                  <p className="text-text-secondary text-sm">{w.velocita_media_kmh} km/h</p>
+                  <p className="text-primary font-bold text-lg">{typeof w.distanza_km === 'number' ? w.distanza_km.toFixed(1) : w.distanza_km} km</p>
+                  <p className="text-text-secondary text-sm">{typeof w.velocita_media_kmh === 'number' ? w.velocita_media_kmh.toFixed(1) : w.velocita_media_kmh} km/h</p>
                 </div>
               </button>
             ))}

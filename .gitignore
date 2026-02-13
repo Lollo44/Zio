@@ -1,13 +1,46 @@
+# Environment files
+*.env
+*.env.*
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Test artifacts
+.pytest_cache/
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+build/
+dist/
+frontend/build/
 # Gradle
 .gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar
+*/build/
+.gradletasknamecache
 
-# IDE
-.idea/
-*.iml
+# Android
+*.apk
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+out/
+captures/
+.externalNativeBuild
+.cxx
 local.properties
 
-# OS
+# IntelliJ
+*.iml
+.idea/
+
+# Misc
 .DS_Store
-Thumbs.db
+*.log

@@ -9,19 +9,21 @@ Disponibile in due versioni: **Android** e **Webapp**.
 - Piani di allenamento automatici e personalizzati
 - Statistiche per periodo (settimana/mese/totale)
 
-## Versione Android
-Apri il progetto in Android Studio, sincronizza Gradle e avvia su un dispositivo Android.
-- Kotlin + Jetpack Compose + Material 3
-- Room database per persistenza locale
-- GPS e sensore contapassi
+## Come avviare
 
-## Versione Webapp (PWA)
-Apri `webapp/index.html` in un browser o servi la cartella con un server locale:
+### Opzione 1: Android Studio
+Apri il progetto in Android Studio, sincronizza Gradle e avvia su un dispositivo Android.
+
+### Opzione 2: Riga di comando
 ```bash
-cd webapp && python3 -m http.server 8080
+# Compilare l'app
+./gradlew assembleDebug
+
+# Installare su dispositivo connesso
+./gradlew installDebug
 ```
-Poi visita http://localhost:8080
-- HTML/CSS/JS puro, nessuna dipendenza esterna
-- Progressive Web App installabile su mobile
-- Funziona anche offline grazie al Service Worker
-- localStorage per persistenza dati
+
+## Requisiti
+- Android SDK (API 26+)
+- JDK 17 o superiore
+- Dispositivo Android con Android 8.0 (Oreo) o superiore

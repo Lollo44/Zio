@@ -233,26 +233,53 @@ async def create_circuit(request: Request, circuit: CircuitSession):
 
 # ===== EXERCISES =====
 
-DEFAULT_EXERCISES = [
-    {"exercise_id": "ex_bicipiti", "nome": "Bicipiti", "tipo": "pesi", "gruppo_muscolare": "braccia", "descrizione": "Curl con manubri", "serie_default": 3, "ripetizioni_default": 12, "peso_default": 2.0},
-    {"exercise_id": "ex_tricipiti", "nome": "Tricipiti", "tipo": "pesi", "gruppo_muscolare": "braccia", "descrizione": "Estensioni tricipiti", "serie_default": 3, "ripetizioni_default": 12, "peso_default": 2.0},
-    {"exercise_id": "ex_petto", "nome": "Petto", "tipo": "pesi", "gruppo_muscolare": "petto", "descrizione": "Chest press leggero", "serie_default": 3, "ripetizioni_default": 10, "peso_default": 3.0},
-    {"exercise_id": "ex_spalle", "nome": "Spalle", "tipo": "pesi", "gruppo_muscolare": "spalle", "descrizione": "Alzate laterali", "serie_default": 3, "ripetizioni_default": 12, "peso_default": 1.5},
-    {"exercise_id": "ex_schiena", "nome": "Schiena", "tipo": "pesi", "gruppo_muscolare": "schiena", "descrizione": "Rematore con manubri", "serie_default": 3, "ripetizioni_default": 10, "peso_default": 3.0},
-    {"exercise_id": "ex_addome", "nome": "Addome", "tipo": "corpo_libero", "gruppo_muscolare": "core", "descrizione": "Crunch leggeri", "serie_default": 2, "ripetizioni_default": 15, "peso_default": 0},
-    {"exercise_id": "ex_gambe", "nome": "Gambe", "tipo": "pesi", "gruppo_muscolare": "gambe", "descrizione": "Squat assistito", "serie_default": 3, "ripetizioni_default": 10, "peso_default": 0},
-    {"exercise_id": "ex_cardio", "nome": "Cardio leggero", "tipo": "cardio", "gruppo_muscolare": "cardio", "descrizione": "Cyclette o camminata veloce", "serie_default": 1, "ripetizioni_default": 1, "peso_default": 0},
-]
+from exercises_database import ESERCIZI_DATABASE, ELASTICI_KG_MAPPING, CATEGORIE
 
 @app.get("/api/exercises")
-async def get_exercises(request: Request):
+async def get_exercises(request: Request, categoria: Optional[str] = None):
     await get_current_user(request)
-    exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
-    if not exercises:
-        for ex in DEFAULT_EXERCISES:
+    # Seed database if empty
+    count = await db.exercises.count_documents({})
+    if count == 0:
+        for ex in ESERCIZI_DATABASE:
             await db.exercises.insert_one(ex.copy())
-        exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
+    # Query with optional category filter
+    query = {"categoria": categoria} if categoria else {}
+    exercises = await db.exercises.find(query, {"_id": 0}).to_list(100)
     return exercises
+
+@app.get("/api/exercises/categories")
+async def get_exercise_categories(request: Request):
+    await get_current_user(request)
+    return {"categorie": CATEGORIE}
+
+@app.get("/api/exercises/{exercise_id}")
+async def get_exercise_detail(request: Request, exercise_id: str):
+    await get_current_user(request)
+    exercise = await db.exercises.find_one({"exercise_id": exercise_id}, {"_id": 0})
+    if not exercise:
+        raise HTTPException(status_code=404, detail="Esercizio non trovato")
+    return exercise
+
+@app.get("/api/exercises/{exercise_id}/alternatives")
+async def get_exercise_alternatives(request: Request, exercise_id: str):
+    """Get alternative exercises for smart swap"""
+    await get_current_user(request)
+    exercise = await db.exercises.find_one({"exercise_id": exercise_id}, {"_id": 0})
+    if not exercise:
+        raise HTTPException(status_code=404, detail="Esercizio non trovato")
+    # Find alternatives in same category, excluding current exercise
+    categoria = exercise.get("categoria")
+    alternatives = await db.exercises.find(
+        {"categoria": categoria, "exercise_id": {"$ne": exercise_id}},
+        {"_id": 0}
+    ).to_list(5)
+    return {"esercizio_originale": exercise, "alternative": alternatives}
+
+@app.get("/api/elastici")
+async def get_elastici_mapping(request: Request):
+    await get_current_user(request)
+    return ELASTICI_KG_MAPPING
 
 # ===== PLANS =====
 

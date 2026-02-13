@@ -327,7 +327,7 @@ async def generate_plan(request: Request, inputs: Optional[WorkoutGeneratorInput
     
     # Filter by focus if specified
     focus = inputs.focus_muscolare if inputs else None
-    dolori = inputs.dolori_articolari if inputs else []
+    dolori = inputs.dolori_articolari if inputs and inputs.dolori_articolari else []
     
     # Exercises to avoid based on joint pain
     avoid_exercises = set()

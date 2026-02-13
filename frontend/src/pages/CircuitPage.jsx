@@ -285,6 +285,7 @@ const CircuitPage = () => {
                   {allComplete && <Check size={20} className="text-secondary" />}
                   <div className="text-left">
                     <p className={`font-bold ${allComplete ? 'text-secondary' : 'text-text-primary'}`}>{log.nome}</p>
+                    {log.categoria && <p className="text-primary text-xs">{log.categoria}</p>}
                     <p className="text-text-secondary text-sm">{completedSets}/{log.sets.length} serie</p>
                   </div>
                 </div>
@@ -302,6 +303,34 @@ const CircuitPage = () => {
 
               {isExpanded && (
                 <div className="px-4 pb-4 space-y-2">
+                  {/* Exercise description if available */}
+                  {log.descrizione && (
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
+                      <p className="text-blue-300 text-xs">{log.descrizione}</p>
+                      {log.note && <p className="text-yellow-400/80 text-xs mt-1">⚠️ {log.note}</p>}
+                    </div>
+                  )}
+
+                  {/* Smart actions row */}
+                  {status === 'idle' && (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); fetchAlternatives(exId); }}
+                        className="flex-1 flex items-center justify-center gap-1 h-9 bg-surface-highlight border border-border rounded-xl text-text-secondary text-xs hover:border-primary/50 transition-colors"
+                        data-testid={`swap-${exId}`}
+                      >
+                        <RefreshCw size={12} /> Sostituisci
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); showExerciseInfo(log); }}
+                        className="flex items-center justify-center gap-1 h-9 px-4 bg-surface-highlight border border-border rounded-xl text-text-secondary text-xs hover:border-primary/50 transition-colors"
+                        data-testid={`info-${exId}`}
+                      >
+                        <Info size={12} /> Info
+                      </button>
+                    </div>
+                  )}
+
                   {/* Plan reference */}
                   {log.piano_serie && (
                     <div className="bg-surface-highlight rounded-xl p-2 text-text-secondary text-xs flex items-center justify-between">

@@ -129,7 +129,7 @@ const WalkPage = () => {
   const saveWalk = useCallback(async () => {
     try {
       const avgSpeed = time > 0 ? Math.round((distance / (time / 3600)) * 10) / 10 : 0;
-      await fetch(`${API_URL}/api/walks`, {
+      const response = await fetch(`${API_URL}/api/walks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -141,15 +141,20 @@ const WalkPage = () => {
           percorso: positions.map(p => ({ lat: p.lat, lng: p.lng })),
         }),
       });
-      setStatus('idle');
-      setTime(0);
-      setDistance(0);
-      setSpeed(0);
-      setPositions([]);
-      distanceRef.current = 0;
-      lastPosRef.current = null;
-      const res = await fetch(`${API_URL}/api/walks`, { credentials: 'include' });
-      if (res.ok) setHistory(await res.json());
+      
+      if (response.ok) {
+        setStatus('idle');
+        setTime(0);
+        setDistance(0);
+        setSpeed(0);
+        setPositions([]);
+        distanceRef.current = 0;
+        lastPosRef.current = null;
+        const res = await fetch(`${API_URL}/api/walks`, { credentials: 'include' });
+        if (res.ok) setHistory(await res.json());
+      } else {
+        console.error('Save failed with status:', response.status);
+      }
     } catch (err) {
       console.error('Save error:', err);
     }

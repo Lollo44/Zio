@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import WaltTheGoat from '../components/mascot/WaltTheGoat';
 import BigButton from '../components/ui/BigButton';
-import { Play, Square, Check, ChevronDown, ChevronUp, Timer, TrendingUp, TrendingDown, Minus, Edit3, Save } from 'lucide-react';
+import { Play, Square, Check, ChevronDown, ChevronUp, Timer, TrendingUp, TrendingDown, Minus, Edit3, Save, RefreshCw, Info, X } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 

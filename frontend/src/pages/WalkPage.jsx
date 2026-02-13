@@ -191,7 +191,7 @@ const WalkPage = () => {
         <div className="px-6 mb-4">
           <div className="bg-red-500/20 border border-red-500/40 rounded-2xl p-3 text-red-300 text-sm">
             {saveError}
-            <button onClick={() => setSaveError(null)} className="ml-2 underline">Chiudi</button>
+            <button onClick={() => setSaveError(null)} className="ml-2 underline" aria-label="Chiudi notifica errore">Chiudi</button>
           </div>
         </div>
       )}

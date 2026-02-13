@@ -12,14 +12,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="Walter the Walker API")
+def get_allowed_origins():
+    """Get CORS allowed origins from environment or return default localhost origins."""
+    origins_str = os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001")
+    return [origin.strip() for origin in origins_str.split(",")]
 
-# Get allowed origins from environment or use default localhost origins
-allowed_origins = [origin.strip() for origin in os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")]
+app = FastAPI(title="Walter the Walker API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

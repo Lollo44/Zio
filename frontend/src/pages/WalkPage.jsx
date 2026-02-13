@@ -58,30 +58,44 @@ const WalkPage = () => {
     setGpsError(null);
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        const { latitude, longitude, speed: gpsSpeed } = pos.coords;
-        const point = { lat: latitude, lng: longitude, time: Date.now() };
+        const { latitude, longitude, speed: gpsSpeed, accuracy } = pos.coords;
+        const point = { lat: latitude, lng: longitude, time: Date.now(), accuracy };
+
+        // Filter out poor accuracy readings (>30m uncertainty means bad GPS)
+        if (accuracy && accuracy > 30) {
+          return; // Ignore this reading
+        }
 
         if (lastPosRef.current) {
           const d = haversineDistance(lastPosRef.current.lat, lastPosRef.current.lng, latitude, longitude);
-          if (d > 0.003) { // min 3m to avoid GPS jitter
+          const timeDiff = (point.time - lastPosRef.current.time) / 1000; // seconds
+          const calculatedSpeed = timeDiff > 0 ? (d / timeDiff) * 3600 : 0; // km/h
+
+          // Movement validation: require minimum 5m distance AND reasonable speed (0.5-15 km/h for walking)
+          // This prevents counting movement when stationary (GPS drift)
+          const isValidMovement = d > 0.005 && calculatedSpeed > 0.5 && calculatedSpeed < 15;
+          
+          if (isValidMovement) {
             distanceRef.current += d;
             setDistance(Math.round(distanceRef.current * 100) / 100);
             lastPosRef.current = point;
             setPositions((prev) => [...prev, point]);
+            
+            // Use calculated speed if GPS speed unavailable, otherwise use GPS speed
+            const displaySpeed = (gpsSpeed && gpsSpeed > 0.1) 
+              ? Math.round(gpsSpeed * 3.6 * 10) / 10 
+              : Math.round(calculatedSpeed * 10) / 10;
+            setSpeed(displaySpeed);
           }
         } else {
           lastPosRef.current = point;
           setPositions([point]);
         }
-
-        if (gpsSpeed && gpsSpeed > 0) {
-          setSpeed(Math.round(gpsSpeed * 3.6 * 10) / 10); // m/s to km/h
-        }
       },
       (err) => {
         setGpsError(`Errore GPS: ${err.message}`);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 2000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
     );
   }, []);
 

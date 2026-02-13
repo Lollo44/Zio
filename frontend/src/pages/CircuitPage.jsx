@@ -14,6 +14,8 @@ const CircuitPage = () => {
   const [history, setHistory] = useState([]);
   const [activePlan, setActivePlan] = useState(null);
   const [editingPlan, setEditingPlan] = useState(null);
+  const [swapModal, setSwapModal] = useState(null); // { exId, alternatives: [] }
+  const [exerciseInfo, setExerciseInfo] = useState(null); // For showing detailed info
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
 

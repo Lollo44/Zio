@@ -66,18 +66,13 @@ class WalterAPITester:
         """Create test user and session directly in database for testing"""
         print("\n🔍 Creating Test User & Session...")
         
-        # Generate test user data
-        timestamp = int(datetime.now().timestamp())
-        self.user_id = f"test_user_{timestamp}"
-        self.session_token = f"test_session_{timestamp}"
+        # Use the real session token created via MongoDB
+        self.session_token = "test_session_1770984169417"
+        self.user_id = "test-user-1770984169417"
         
-        # This would normally be done via MongoDB, but for API testing
-        # we'll create a mock session that the backend can recognize
-        print(f"Generated User ID: {self.user_id}")
-        print(f"Generated Session Token: {self.session_token}")
+        print(f"Using User ID: {self.user_id}")
+        print(f"Using Session Token: {self.session_token}")
         
-        # Note: In real testing, we'd insert into MongoDB here
-        # For now, we'll test with the assumption that auth is working
         return True
 
     def test_auth_me_without_token(self):

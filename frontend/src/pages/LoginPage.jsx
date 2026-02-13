@@ -18,7 +18,7 @@ const LoginPage = () => {
         {/* App Title */}
         <div className="text-center space-y-3">
           <h1 className="text-4xl font-extrabold font-heading text-text-primary tracking-tight">
-            Walter the Walker
+            Walt the GOAT
           </h1>
           <p className="text-text-secondary text-lg">
             Il tuo compagno di fitness personale

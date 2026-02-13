@@ -1,81 +1,55 @@
-# Walter the Walker - PRD
+# Walt the GOAT - PRD
 
 ## Problem Statement
-Conversione dell'app Android "Nonno Workout" (Kotlin/Jetpack Compose) in una Progressive Web App chiamata "Walter the Walker". L'app è un fitness tracker per la fascia di età 70-75, con tema scuro elegante, mascotte "Walt the Goat" (ariete animato), login Google, e interfaccia in italiano.
+App fitness PWA mobile-first "Walt the GOAT" per la fascia di età 70-75. Conversione da Android "Nonno Workout" (Kotlin/Jetpack Compose) a web app React+FastAPI+MongoDB. Tema scuro elegante, mascotte "Walt the Goat" ariete animato SVG, login Google, interfaccia italiana. Sfide Goat, statistiche avanzate, tracking GPS, circuito pesi con deviazioni dal piano.
 
 ## Architecture
-- **Frontend**: React 18 + Tailwind CSS v3 + Recharts + Lucide Icons
+- **Frontend**: React 18 + Tailwind CSS v3 + Recharts + Leaflet + Lucide Icons
 - **Backend**: FastAPI + MongoDB (motor async driver)
 - **Auth**: Emergent Google OAuth
-- **Design**: Dark elegant theme, mobile-first PWA (max-w-md centered)
+- **Design**: Dark elegant theme (#09090b bg, amber/emerald accents), mobile-first
 
 ## User Personas
-- Seniors 70-75 years old, Italian speaking
-- Tech-comfortable, use smartphones
-- Want to track walking and light weight training
-- Motivated by stats and progress tracking
-
-## Core Requirements
-- [x] Google Auth login (Emergent OAuth)
-- [x] Onboarding multi-step (nome, età, peso, altezza, livello, obiettivi, giorni)
-- [x] Home dashboard with daily plan, stats, mascot
-- [x] Walking tracker (timer, distance, steps, speed simulation)
-- [x] Circuit training (8 exercises, log series/reps/weight)
-- [x] Auto-generated plans for 70-75 age group
-- [x] Statistics with charts (Recharts: line + bar charts)
-- [x] Profile management
-- [x] Mascotte "Walt the Goat" SVG con 3 stati: idle, walking, flexing
-- [x] Dark elegant theme (amber/emerald on zinc)
-- [x] Italian language interface
-- [x] Bottom navigation bar
+- Italiani 70-75 anni, attivi e motivati
+- Usano smartphone, cercano tracking fitness semplice e motivante
 
 ## What's Been Implemented (2026-02-13)
-### Backend (FastAPI)
-- Auth endpoints: /api/auth/session, /api/auth/me, /api/auth/logout
-- Profile: GET/PUT /api/profile
-- Walks: GET/POST /api/walks
-- Circuits: GET/POST /api/circuits
-- Exercises: GET /api/exercises (8 seeded exercises)
-- Plans: GET/POST /api/plans, POST /api/plans/generate
-- Stats: GET /api/stats (aggregated + chart data)
 
-### Frontend (React)
-- LoginPage with Walt mascot + Google login
-- AuthCallback for OAuth flow
-- OnboardingPage (5-step wizard)
-- HomePage (greeting, daily plan, weekly stats, records)
-- WalkPage (timer, start/pause/stop/save, history)
-- CircuitPage (exercise accordion, log sets/reps/weight, history)
-- StatsPage (4 charts: distance, steps, volume, duration)
-- ProfilePage (view/edit profile, logout)
-- BottomNav (5 tabs)
-- WaltTheGoat SVG mascot component (3 animation states)
+### Backend
+- Auth: Google OAuth session, /api/auth/session, /me, /logout
+- Profile: GET/PUT con onboarding multi-step
+- Walks: GET/POST con dati GPS (percorso lat/lng)
+- Circuits: GET/POST con tracking per-SET, deviazioni dal piano
+- Exercises: 8 esercizi seed (bicipiti, tricipiti, petto, spalle, schiena, addome, gambe, cardio)
+- Plans: GET/POST, generate auto, PUT update singolo esercizio
+- Stats ENHANCED: totale, settimanale, mensile, medie, streak, record, volume_per_esercizio, record_esercizi, grafici_giornalieri, calorie stimate
+- Sfide Goat: generate (3 sfide random), check-progress, GET all
 
-## Testing Status
-- Backend: 15/15 tests passed (100%)
-- Frontend: All core functionality working (98%)
+### Frontend
+- LoginPage: "Walt the GOAT" con mascotte + Google login
+- OnboardingPage: 5 step (nome, dati, livello, obiettivo, giorni)
+- HomePage: saluto, piano di oggi (rigenerabile), stats settimanali, sfide attive, record, streak
+- WalkPage: timer, GPS reale (Geolocation API), distanza/velocità/passi stimati/calorie, mappa Leaflet dark tiles per percorsi, cronologia
+- CircuitPage: tracking per-SET con completamento individuale, aggiunta/rimozione serie, modifica piano pre-esecuzione, badge deviazioni (+/- verde/rosso), riepilogo vs piano
+- StatsPage: 4 tab (Panoramica/Camminate/Circuiti/Trend), Radar chart profilo fitness, Pie chart volume muscolare, Area/Bar/Line charts, streak, calorie, record per esercizio
+- SfidePage: sfide attive con progress bar, sfide completate con badge, generazione nuove sfide
+- WaltTheGoat SVG: ariete dettagliato con corna curve, occhi con blink, barba, guance rosa, 3 stati animati (idle float, walking legs+arms, flexing bicep curl con manubri + gocce sudore)
+- BottomNav: 5 tab (Home, Camminata, Circuito, Stats, Sfide)
+- Profilo accessibile da icona in Home header
 
-## Prioritized Backlog
-### P0 (Critical)
-- None (all core features implemented)
+### Testing
+- Backend: 16/16 API test PASSED (100%)
+- Frontend: Visivamente verificato con screenshot (Home, Walk, Circuit, Stats, Sfide)
 
-### P1 (Important)
-- GPS real-time tracking integration (Geolocation API)
-- Real step counting (DeviceMotion API)
-- Custom plan creation/editing
-- Push notifications for workout reminders
+## Backlog
+### P1
+- Mappa route display per camminate storiche (clic su camminata > mostra mappa)
+- Push notification per promemoria allenamento
+- Piani custom creabili dall'utente
+- Offline mode con service worker
 
-### P2 (Nice to have)
-- Offline mode with service worker
-- Walking route map (Leaflet/react-leaflet)
-- Export data (CSV/PDF)
-- Social features (share achievements)
-- Weather API integration
-- Heart rate manual input
-- Hydration reminders
-
-## Next Tasks
-1. Add GPS geolocation for real distance tracking
-2. Implement custom plan creation
-3. Add more Walt the Goat animation states
-4. Service worker for offline support
+### P2
+- Export dati CSV/PDF
+- Condivisione social risultati
+- Integrazione meteo
+- Input manuale frequenza cardiaca

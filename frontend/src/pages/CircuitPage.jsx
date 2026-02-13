@@ -63,6 +63,9 @@ const CircuitPage = () => {
       newLogs[exId] = {
         nome: ex.nome,
         exercise_id: ex.exercise_id || exId,
+        categoria: ex.categoria || '',
+        descrizione: ex.descrizione || ex.descrizione_tecnica || '',
+        note: ex.note || ex.note_sicurezza || '',
         sets,
         piano_serie: numSerie,
         piano_ripetizioni: reps,

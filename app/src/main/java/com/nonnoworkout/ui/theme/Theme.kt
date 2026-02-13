@@ -19,7 +19,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun NonnoWorkoutTheme(content: @Composable () -> Unit) {
+fun WalterTheWalkerTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = LightColorScheme,
         typography = Typography,

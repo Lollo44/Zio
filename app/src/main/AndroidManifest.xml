@@ -6,9 +6,9 @@
 
     <application
         android:allowBackup="true"
-        android:label="Nonno Workout"
+        android:label="Walter the Walker"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NonnoWorkout">
+        android:theme="@style/Theme.WalterTheWalker">
         <activity
             android:name=".MainActivity"
             android:exported="true">

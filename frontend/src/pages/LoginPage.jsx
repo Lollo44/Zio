@@ -1,6 +1,6 @@
 import React from 'react';
-import WaltTheGoat from '../components/mascot/WaltTheGoat';
 import { Footprints } from 'lucide-react';
+import waltLogo from '../assets/walt-logo.png';
 
 const LoginPage = () => {
   const handleGoogleLogin = () => {
@@ -11,19 +11,19 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6" data-testid="login-page">
-      <div className="max-w-sm w-full flex flex-col items-center gap-8">
-        {/* Mascot */}
-        <WaltTheGoat state="idle" size={160} />
+      <div className="max-w-sm w-full flex flex-col items-center gap-6">
+        {/* Walt Logo Image */}
+        <img 
+          src={waltLogo} 
+          alt="Walt the GOAT" 
+          className="w-64 h-auto object-contain drop-shadow-2xl"
+          data-testid="walt-logo"
+        />
 
-        {/* App Title */}
-        <div className="text-center space-y-3">
-          <h1 className="text-4xl font-extrabold font-heading text-text-primary tracking-tight">
-            Walt the GOAT
-          </h1>
-          <p className="text-text-secondary text-lg">
-            Il tuo compagno di fitness personale
-          </p>
-        </div>
+        {/* Subtitle - logo already has the title */}
+        <p className="text-text-secondary text-lg text-center">
+          Il tuo compagno di fitness personale
+        </p>
 
         {/* Walt speech bubble */}
         <div className="bg-surface border border-border rounded-3xl p-5 w-full relative">

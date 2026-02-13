@@ -14,6 +14,7 @@ const WalkPage = () => {
   const [positions, setPositions] = useState([]);
   const [history, setHistory] = useState([]);
   const [gpsError, setGpsError] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const [selectedWalk, setSelectedWalk] = useState(null);
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
@@ -127,9 +128,10 @@ const WalkPage = () => {
   const estimatedCalories = Math.round(distance * 60);
 
   const saveWalk = useCallback(async () => {
+    setSaveError(null);
     try {
       const avgSpeed = time > 0 ? Math.round((distance / (time / 3600)) * 10) / 10 : 0;
-      await fetch(`${API_URL}/api/walks`, {
+      const response = await fetch(`${API_URL}/api/walks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -141,16 +143,23 @@ const WalkPage = () => {
           percorso: positions.map(p => ({ lat: p.lat, lng: p.lng })),
         }),
       });
-      setStatus('idle');
-      setTime(0);
-      setDistance(0);
-      setSpeed(0);
-      setPositions([]);
-      distanceRef.current = 0;
-      lastPosRef.current = null;
-      const res = await fetch(`${API_URL}/api/walks`, { credentials: 'include' });
-      if (res.ok) setHistory(await res.json());
+      
+      if (response.ok) {
+        setStatus('idle');
+        setTime(0);
+        setDistance(0);
+        setSpeed(0);
+        setPositions([]);
+        distanceRef.current = 0;
+        lastPosRef.current = null;
+        const res = await fetch(`${API_URL}/api/walks`, { credentials: 'include' });
+        if (res.ok) setHistory(await res.json());
+      } else {
+        setSaveError('Impossibile salvare la passeggiata. Riprova.');
+        console.error('Save failed with status:', response.status);
+      }
     } catch (err) {
+      setSaveError('Errore di rete. Controlla la connessione.');
       console.error('Save error:', err);
     }
   }, [distance, time, positions, estimatedSteps]);
@@ -175,6 +184,15 @@ const WalkPage = () => {
       {gpsError && (
         <div className="px-6 mb-4">
           <div className="bg-red-500/20 border border-red-500/40 rounded-2xl p-3 text-red-300 text-sm">{gpsError}</div>
+        </div>
+      )}
+
+      {saveError && (
+        <div className="px-6 mb-4">
+          <div className="bg-red-500/20 border border-red-500/40 rounded-2xl p-3 text-red-300 text-sm">
+            {saveError}
+            <button type="button" onClick={() => setSaveError(null)} className="ml-2 underline" aria-label="Chiudi notifica errore">Chiudi</button>
+          </div>
         </div>
       )}
 

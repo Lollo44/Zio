@@ -2,6 +2,14 @@
 *.env
 *.env.*
 
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Test artifacts
+.pytest_cache/
 # Dependencies
 node_modules/
 frontend/node_modules/

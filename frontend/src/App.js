@@ -12,8 +12,10 @@ import ProfilePage from './pages/ProfilePage';
 import SfidePage from './pages/SfidePage';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
+const AUTH_DISABLED = process.env.REACT_APP_AUTH_DISABLED === 'true';
 
 const ProtectedRoute = ({ children, user, setUser }) => {
+  if (AUTH_DISABLED) return children;
   const [isAuthenticated, setIsAuthenticated] = useState(user ? true : null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -58,6 +60,12 @@ function AppRouter() {
   const [user, setUser] = useState(null);
   const location = useLocation();
 
+  useEffect(() => {
+    if (AUTH_DISABLED && !user) {
+      setUser({ user_id: 'user_demo', name: 'Demo User', profile_complete: true });
+    }
+  }, [user]);
+
   // CRITICAL: Detect session_id synchronously during render
   if (location.hash?.includes('session_id=')) {
     return <AuthCallback />;
@@ -68,13 +76,14 @@ function AppRouter() {
     window.location.href = '/login';
   };
 
-  const noNavPages = ['/login', '/onboarding'];
+  const noNavPages = ['/login', '/onboarding', '/auth/callback'];
   const showNav = user && !noNavPages.includes(location.pathname) && !location.hash?.includes('session_id=');
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       <Routes>
-        <Route path="/login" element={user ? <Navigate to="/home" replace /> : <LoginPage />} />
+        <Route path="/login" element={AUTH_DISABLED ? <Navigate to="/home" replace /> : (user ? <Navigate to="/home" replace /> : <LoginPage />)} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/home" element={<ProtectedRoute user={user} setUser={setUser}><HomePage user={user} /></ProtectedRoute>} />
         <Route path="/walk" element={<ProtectedRoute user={user} setUser={setUser}><WalkPage /></ProtectedRoute>} />

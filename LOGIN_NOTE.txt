@@ -1,0 +1,2 @@
+Login disattivato:
+aggiungere generatore piani e sistemare... tutto!!! sembra sia rimasta solo la GUI

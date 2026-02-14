@@ -12,9 +12,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+AUTH_DISABLED = os.environ.get("AUTH_DISABLED", "false").lower() == "true"
+
 def get_allowed_origins():
     """Get CORS allowed origins from environment or return default localhost origins."""
-    origins_str = os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001")
+    origins_str = os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://localhost:3011")
     return [origin.strip() for origin in origins_str.split(",")]
 
 app = FastAPI(title="Walter the Walker API")
@@ -31,6 +33,17 @@ MONGO_URL = os.environ.get("MONGO_URL")
 DB_NAME = os.environ.get("DB_NAME")
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
+
+def get_cookie_settings():
+    """Use secure cookies in production; relax for local HTTP development."""
+    env = os.environ.get("ENV", "development").lower()
+    cookie_secure = os.environ.get("COOKIE_SECURE")
+    if cookie_secure is not None:
+        secure = cookie_secure.lower() == "true"
+    else:
+        secure = env == "production"
+    samesite = "none" if secure else "lax"
+    return secure, samesite
 
 # ===== MODELS =====
 
@@ -86,7 +99,27 @@ class PlanExerciseUpdate(BaseModel):
 
 # ===== AUTH HELPERS =====
 
+async def get_demo_user():
+    """Return or create a demo user when auth is disabled."""
+    demo_email = "demo@local"
+    user_doc = await db.users.find_one({"email": demo_email}, {"_id": 0})
+    if user_doc:
+        return user_doc
+    user_id = "user_demo"
+    user_doc = {
+        "user_id": user_id,
+        "email": demo_email,
+        "name": "Demo User",
+        "picture": "",
+        "profile_complete": True,
+        "created_at": datetime.now(timezone.utc),
+    }
+    await db.users.insert_one(user_doc.copy())
+    return user_doc
+
 async def get_current_user(request: Request):
+    if AUTH_DISABLED:
+        return await get_demo_user()
     session_token = request.cookies.get("session_token")
     if not session_token:
         auth_header = request.headers.get("Authorization")
@@ -113,6 +146,8 @@ async def get_current_user(request: Request):
 
 @app.post("/api/auth/session")
 async def create_session(request: Request, response: Response):
+    if AUTH_DISABLED:
+        return await get_demo_user()
     body = await request.json()
     session_id = body.get("session_id")
     if not session_id:
@@ -138,12 +173,15 @@ async def create_session(request: Request, response: Response):
         await db.users.insert_one({"user_id": user_id, "email": email, "name": name, "picture": picture, "profile_complete": False, "created_at": datetime.now(timezone.utc)})
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
     await db.user_sessions.insert_one({"user_id": user_id, "session_token": session_token, "expires_at": expires_at, "created_at": datetime.now(timezone.utc)})
-    response.set_cookie(key="session_token", value=session_token, httponly=True, secure=True, samesite="none", path="/", max_age=7*24*3600)
+    secure, samesite = get_cookie_settings()
+    response.set_cookie(key="session_token", value=session_token, httponly=True, secure=secure, samesite=samesite, path="/", max_age=7*24*3600)
     user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     return user_doc
 
 @app.get("/api/auth/me")
 async def auth_me(request: Request):
+    if AUTH_DISABLED:
+        return await get_demo_user()
     return await get_current_user(request)
 
 @app.post("/api/auth/logout")
@@ -151,7 +189,8 @@ async def logout(request: Request, response: Response):
     session_token = request.cookies.get("session_token")
     if session_token:
         await db.user_sessions.delete_many({"session_token": session_token})
-    response.delete_cookie(key="session_token", path="/", samesite="none", secure=True)
+    secure, samesite = get_cookie_settings()
+    response.delete_cookie(key="session_token", path="/", samesite=samesite, secure=secure)
     return {"message": "Logout effettuato"}
 
 # ===== PROFILE =====
@@ -661,3 +700,10 @@ async def check_sfide_progress(request: Request):
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "app": "Walt the GOAT"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", "8000"))
+    uvicorn.run("server:app", host="0.0.0.0", port=port, reload=True)

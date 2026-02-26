@@ -5,7 +5,7 @@ from datetime import datetime
 import uuid
 
 class WaltGoatAPITester:
-    def __init__(self, base_url="https://seniorfit.preview.emergentagent.com"):
+    def __init__(self, base_url="https://finish-work-3.preview.emergentagent.com"):
         self.base_url = base_url
         self.session_token = "test_session_walt_123"  # From context
         self.user_id = "test-user-walt"  # From context

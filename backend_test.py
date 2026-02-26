@@ -173,19 +173,20 @@ class WaltGoatAPITester:
         return success1 and success2
 
     def test_exercises_endpoint(self):
-        """Test exercises GET (seeded data)"""
+        """Test exercises GET - should return 26 exercises"""
         print("\n🔍 Testing Exercises Endpoint...")
-        success, response = self.run_test("Exercises GET /api/exercises - returns 8 seeded exercises", "GET", "api/exercises", 200)
+        success, response = self.run_test("Exercises GET /api/exercises - returns 26 exercises", "GET", "api/exercises", 200)
         
-        # Verify we got the expected 8 exercises
-        if success and isinstance(response, list) and len(response) >= 8:
-            print(f"   ✅ Found {len(response)} exercises (expected 8+)")
-            # Check for Italian exercise names
-            italian_exercises = [ex for ex in response if any(word in ex.get('nome', '').lower() for word in ['bicipiti', 'tricipiti', 'petto', 'spalle', 'schiena', 'addome', 'gambe', 'cardio'])]
-            print(f"   ✅ Found {len(italian_exercises)} Italian-named exercises")
-            return True
+        # Verify we got the expected 26 exercises 
+        if success and isinstance(response, list):
+            print(f"   ✅ Found {len(response)} exercises")
+            if len(response) >= 26:
+                print(f"   ✅ Expected 26+ exercises, got {len(response)}")
+                return True
+            else:
+                return self.log_test("Exercises count validation", False, None, f"Expected 26+ exercises, got {len(response)}")
         elif success:
-            return self.log_test("Exercises count validation", False, None, f"Expected 8+ exercises, got {len(response) if isinstance(response, list) else 0}")
+            return self.log_test("Exercises count validation", False, None, f"Expected list of exercises, got {type(response)}")
         return success
 
     def test_plans_endpoints(self):

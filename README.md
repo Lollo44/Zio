@@ -7,6 +7,7 @@ App Android per monitorare camminate, circuito pesi e statistiche per persone se
 - Circuito pesi con registrazione serie/ripetizioni/peso
 - Piani di allenamento automatici e personalizzati
 - Statistiche e grafici di miglioramento
+- Mascotte "Walter the Walker" (Walt) con stati motivazionali: idle, walking, flexing, trophy
 
 ## Come avviare
 

@@ -39,8 +39,7 @@ class WaltGoatAPITester:
         url = f"{self.base_url}/{endpoint}"
         test_headers = {'Content-Type': 'application/json'}
         
-        if self.session_token:
-            test_headers['Authorization'] = f'Bearer {self.session_token}'
+        # No authentication needed - AUTH_DISABLED=true
         if headers:
             test_headers.update(headers)
 

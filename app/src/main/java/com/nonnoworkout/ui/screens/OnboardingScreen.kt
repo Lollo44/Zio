@@ -26,7 +26,7 @@ fun OnboardingScreen(onCreatePlan: () -> Unit) {
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(text = "Benvenuto in Walter the Walker", style = MaterialTheme.typography.headlineSmall)
+            Text(text = "Benvenuto in Nonno Workout", style = MaterialTheme.typography.headlineSmall)
             WalterMascotCard(state = WalterMascotState.Idle)
         }
 

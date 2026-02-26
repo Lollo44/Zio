@@ -44,3 +44,7 @@ local.properties
 # Misc
 .DS_Store
 *.log
+-e 
+# Environment files
+*.env
+*.env.*

@@ -20,27 +20,15 @@ const ProtectedRoute = ({ children, user, setUser }) => {
 };
 
 function AppRouter() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({ user_id: 'user_demo', name: 'Demo User', profile_complete: true });
   const location = useLocation();
 
-  useEffect(() => {
-    if (AUTH_DISABLED && !user) {
-      setUser({ user_id: 'user_demo', name: 'Demo User', profile_complete: true });
-    }
-  }, [user]);
-
-  // CRITICAL: Detect session_id synchronously during render
-  if (location.hash?.includes('session_id=')) {
-    return <AuthCallback />;
-  }
-
   const handleLogout = () => {
-    setUser(null);
-    window.location.href = '/login';
+    window.location.href = '/home';
   };
 
   const noNavPages = ['/login', '/onboarding', '/auth/callback'];
-  const showNav = user && !noNavPages.includes(location.pathname) && !location.hash?.includes('session_id=');
+  const showNav = !noNavPages.includes(location.pathname);
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">

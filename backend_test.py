@@ -290,7 +290,7 @@ class WaltGoatAPITester:
         
         # Run all endpoint tests
         tests = [
-            self.test_auth_me_with_token,
+            self.test_auth_me_without_token,
             self.test_profile_endpoints,
             self.test_walks_endpoints,
             self.test_circuits_endpoints,

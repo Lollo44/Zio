@@ -7,8 +7,8 @@ import uuid
 class WaltGoatAPITester:
     def __init__(self, base_url="https://finish-work-3.preview.emergentagent.com"):
         self.base_url = base_url
-        self.session_token = "test_session_walt_123"  # From context
-        self.user_id = "test-user-walt"  # From context
+        self.session_token = None  # No token needed - AUTH_DISABLED=true
+        self.user_id = "user_demo"  # Demo user ID  
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []

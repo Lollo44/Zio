@@ -82,7 +82,7 @@ function AppRouter() {
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       <Routes>
-        <Route path="/login" element={AUTH_DISABLED ? <Navigate to="/home" replace /> : (user ? <Navigate to="/home" replace /> : <LoginPage />)} />
+        <Route path="/login" element={<Navigate to="/home" replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/home" element={<ProtectedRoute user={user} setUser={setUser}><HomePage user={user} /></ProtectedRoute>} />
@@ -91,7 +91,7 @@ function AppRouter() {
         <Route path="/stats" element={<ProtectedRoute user={user} setUser={setUser}><StatsPage /></ProtectedRoute>} />
         <Route path="/sfide" element={<ProtectedRoute user={user} setUser={setUser}><SfidePage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute user={user} setUser={setUser}><ProfilePage user={user} onLogout={handleLogout} /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
       {showNav && <BottomNav />}
     </div>

@@ -22,7 +22,7 @@ fun WalterMascotCard(
     modifier: Modifier = Modifier
 ) {
     val mood = when (state) {
-        WalterMascotState.Idle -> "🐏 Walt the Goat è pronto!"
+        WalterMascotState.Idle -> "🐏 Walt è pronto!"
         WalterMascotState.Walking -> "🚶‍♂️ Walt cammina con te!"
         WalterMascotState.Flexing -> "💪 Walt ti dà energia!"
         WalterMascotState.Trophy -> "🏆 Grande! Walt festeggia!"
@@ -35,7 +35,7 @@ fun WalterMascotCard(
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(text = "Walter the Walker", style = MaterialTheme.typography.titleSmall)
+            Text(text = "Walter \"Walt\" the Walker", style = MaterialTheme.typography.titleSmall)
             Text(text = mood, style = MaterialTheme.typography.bodyMedium)
         }
     }

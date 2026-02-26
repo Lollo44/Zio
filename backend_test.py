@@ -69,12 +69,17 @@ class WaltGoatAPITester:
                 self.log_test("Health check app name validation", False, None, f"Expected 'Walt the GOAT', got '{response.get('app')}'")
         return success
 
-    def test_auth_me_with_token(self):
-        """Test /api/auth/me with valid token"""
-        print("\n🔍 Testing Auth Me with Bearer token...")
-        success, response = self.run_test("Auth GET /api/auth/me with test user Bearer token", "GET", "api/auth/me", 200)
+    def test_auth_me_without_token(self):
+        """Test /api/auth/me without token - should return demo user"""
+        print("\n🔍 Testing Auth Me without authentication (AUTH_DISABLED=true)...")
+        success, response = self.run_test("Auth GET /api/auth/me without session - returns demo user", "GET", "api/auth/me", 200)
         if success and response:
-            print(f"   ✅ User data returned: {response.get('user_id', 'Unknown')}")
+            print(f"   ✅ Demo user data returned: {response.get('user_id', 'Unknown')}")
+            if response.get('user_id') == 'user_demo' and response.get('email') == 'demo@local':
+                print("   ✅ Correct demo user returned")
+                return True
+            else:
+                return self.log_test("Demo user validation", False, None, f"Expected demo user, got {response.get('user_id')}")
         return success
 
     def test_profile_endpoints(self):

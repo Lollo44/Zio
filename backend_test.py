@@ -276,10 +276,10 @@ class WaltGoatAPITester:
 
     def run_all_tests(self):
         """Run all API tests"""
-        print("🐐 Starting Walt the GOAT API Tests...")
+        print("🐐 Starting Walt the GOAT API Tests (AUTH_DISABLED Mode)...")
         print(f"Testing against: {self.base_url}")
-        print(f"Using test user: {self.user_id}")
-        print(f"Using session token: {self.session_token}")
+        print(f"Using demo user: {self.user_id}")
+        print("Authentication: DISABLED - Testing free access")
         
         # Start with health check
         if not self.test_health_check():

@@ -16,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nonnoworkout.ui.components.WalterMascotCard
+import com.nonnoworkout.ui.components.WalterMascotState
 
 @Composable
 fun OnboardingScreen(onCreatePlan: () -> Unit) {
@@ -23,7 +25,10 @@ fun OnboardingScreen(onCreatePlan: () -> Unit) {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = "Benvenuto in Nonno Workout", style = MaterialTheme.typography.headlineSmall)
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(text = "Benvenuto in Nonno Workout", style = MaterialTheme.typography.headlineSmall)
+            WalterMascotCard(state = WalterMascotState.Idle)
+        }
 
         Card(elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

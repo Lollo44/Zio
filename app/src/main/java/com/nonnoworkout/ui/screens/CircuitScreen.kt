@@ -15,11 +15,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nonnoworkout.ui.components.WalterMascotCard
+import com.nonnoworkout.ui.components.WalterMascotState
 
 @Composable
 fun CircuitScreen() {
     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(text = "Circuito pesi", style = MaterialTheme.typography.headlineSmall)
+        WalterMascotCard(state = WalterMascotState.Flexing)
 
         Card(elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -16,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nonnoworkout.ui.components.WalterMascotCard
+import com.nonnoworkout.ui.components.WalterMascotState
 
 @Composable
 fun HomeScreen() {
@@ -24,6 +26,7 @@ fun HomeScreen() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(text = "Ciao Giovanni", style = MaterialTheme.typography.headlineMedium)
+        WalterMascotCard(state = WalterMascotState.Idle)
 
         Card(elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

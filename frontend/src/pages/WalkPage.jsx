@@ -14,6 +14,7 @@ const WalkPage = () => {
   const [positions, setPositions] = useState([]);
   const [history, setHistory] = useState([]);
   const [gpsError, setGpsError] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const [selectedWalk, setSelectedWalk] = useState(null);
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
@@ -58,30 +59,44 @@ const WalkPage = () => {
     setGpsError(null);
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        const { latitude, longitude, speed: gpsSpeed } = pos.coords;
-        const point = { lat: latitude, lng: longitude, time: Date.now() };
+        const { latitude, longitude, speed: gpsSpeed, accuracy } = pos.coords;
+        const point = { lat: latitude, lng: longitude, time: Date.now(), accuracy };
+
+        // Filter out poor accuracy readings (>30m uncertainty means bad GPS)
+        if (accuracy && accuracy > 30) {
+          return; // Ignore this reading
+        }
 
         if (lastPosRef.current) {
           const d = haversineDistance(lastPosRef.current.lat, lastPosRef.current.lng, latitude, longitude);
-          if (d > 0.003) { // min 3m to avoid GPS jitter
+          const timeDiff = (point.time - lastPosRef.current.time) / 1000; // seconds
+          const calculatedSpeed = timeDiff > 0 ? (d / timeDiff) * 3600 : 0; // km/h
+
+          // Movement validation: require minimum 5m distance AND reasonable speed (0.5-15 km/h for walking)
+          // This prevents counting movement when stationary (GPS drift)
+          const isValidMovement = d > 0.005 && calculatedSpeed > 0.5 && calculatedSpeed < 15;
+
+          if (isValidMovement) {
             distanceRef.current += d;
             setDistance(Math.round(distanceRef.current * 100) / 100);
             lastPosRef.current = point;
             setPositions((prev) => [...prev, point]);
+
+            // Use calculated speed if GPS speed unavailable, otherwise use GPS speed
+            const displaySpeed = (gpsSpeed && gpsSpeed > 0.1)
+              ? Math.round(gpsSpeed * 3.6 * 10) / 10
+              : Math.round(calculatedSpeed * 10) / 10;
+            setSpeed(displaySpeed);
           }
         } else {
           lastPosRef.current = point;
           setPositions([point]);
         }
-
-        if (gpsSpeed && gpsSpeed > 0) {
-          setSpeed(Math.round(gpsSpeed * 3.6 * 10) / 10); // m/s to km/h
-        }
       },
       (err) => {
         setGpsError(`Errore GPS: ${err.message}`);
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 2000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 1000 }
     );
   }, []);
 
@@ -113,9 +128,10 @@ const WalkPage = () => {
   const estimatedCalories = Math.round(distance * 60);
 
   const saveWalk = useCallback(async () => {
+    setSaveError(null);
     try {
       const avgSpeed = time > 0 ? Math.round((distance / (time / 3600)) * 10) / 10 : 0;
-      await fetch(`${API_URL}/api/walks`, {
+      const response = await fetch(`${API_URL}/api/walks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -127,16 +143,23 @@ const WalkPage = () => {
           percorso: positions.map(p => ({ lat: p.lat, lng: p.lng })),
         }),
       });
-      setStatus('idle');
-      setTime(0);
-      setDistance(0);
-      setSpeed(0);
-      setPositions([]);
-      distanceRef.current = 0;
-      lastPosRef.current = null;
-      const res = await fetch(`${API_URL}/api/walks`, { credentials: 'include' });
-      if (res.ok) setHistory(await res.json());
+
+      if (response.ok) {
+        setStatus('idle');
+        setTime(0);
+        setDistance(0);
+        setSpeed(0);
+        setPositions([]);
+        distanceRef.current = 0;
+        lastPosRef.current = null;
+        const res = await fetch(`${API_URL}/api/walks`, { credentials: 'include' });
+        if (res.ok) setHistory(await res.json());
+      } else {
+        setSaveError('Impossibile salvare la passeggiata. Riprova.');
+        console.error('Save failed with status:', response.status);
+      }
     } catch (err) {
+      setSaveError('Errore di rete. Controlla la connessione.');
       console.error('Save error:', err);
     }
   }, [distance, time, positions, estimatedSteps]);
@@ -161,6 +184,15 @@ const WalkPage = () => {
       {gpsError && (
         <div className="px-6 mb-4">
           <div className="bg-red-500/20 border border-red-500/40 rounded-2xl p-3 text-red-300 text-sm">{gpsError}</div>
+        </div>
+      )}
+
+      {saveError && (
+        <div className="px-6 mb-4">
+          <div className="bg-red-500/20 border border-red-500/40 rounded-2xl p-3 text-red-300 text-sm">
+            {saveError}
+            <button type="button" onClick={() => setSaveError(null)} className="ml-2 underline" aria-label="Chiudi notifica errore">Chiudi</button>
+          </div>
         </div>
       )}
 

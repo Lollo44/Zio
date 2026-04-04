@@ -5,10 +5,10 @@ from datetime import datetime
 import uuid
 
 class WaltGoatAPITester:
-    def __init__(self, base_url="https://14bdbba9-969e-49e9-8d47-ba87c99a575a.preview.emergentagent.com"):
+    def __init__(self, base_url="https://finish-work-3.preview.emergentagent.com"):
         self.base_url = base_url
-        self.session_token = "test_session_walt_123"  # From context
-        self.user_id = "test-user-walt"  # From context
+        self.session_token = None  # No token needed - AUTH_DISABLED=true
+        self.user_id = "user_demo"  # Demo user ID
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
@@ -39,8 +39,7 @@ class WaltGoatAPITester:
         url = f"{self.base_url}/{endpoint}"
         test_headers = {'Content-Type': 'application/json'}
         
-        if self.session_token:
-            test_headers['Authorization'] = f'Bearer {self.session_token}'
+        # No authentication needed - AUTH_DISABLED=true
         if headers:
             test_headers.update(headers)
 
@@ -70,12 +69,17 @@ class WaltGoatAPITester:
                 self.log_test("Health check app name validation", False, None, f"Expected 'Walt the GOAT', got '{response.get('app')}'")
         return success
 
-    def test_auth_me_with_token(self):
-        """Test /api/auth/me with valid token"""
-        print("\n🔍 Testing Auth Me with Bearer token...")
-        success, response = self.run_test("Auth GET /api/auth/me with test user Bearer token", "GET", "api/auth/me", 200)
+    def test_auth_me_without_token(self):
+        """Test /api/auth/me without token - should return demo user"""
+        print("\n🔍 Testing Auth Me without authentication (AUTH_DISABLED=true)...")
+        success, response = self.run_test("Auth GET /api/auth/me without session - returns demo user", "GET", "api/auth/me", 200)
         if success and response:
-            print(f"   ✅ User data returned: {response.get('user_id', 'Unknown')}")
+            print(f"   ✅ Demo user data returned: {response.get('user_id', 'Unknown')}")
+            if response.get('user_id') == 'user_demo' and response.get('email') == 'demo@local':
+                print("   ✅ Correct demo user returned")
+                return True
+            else:
+                return self.log_test("Demo user validation", False, None, f"Expected demo user, got {response.get('user_id')}")
         return success
 
     def test_profile_endpoints(self):
@@ -169,19 +173,20 @@ class WaltGoatAPITester:
         return success1 and success2
 
     def test_exercises_endpoint(self):
-        """Test exercises GET (seeded data)"""
+        """Test exercises GET - should return 26 exercises"""
         print("\n🔍 Testing Exercises Endpoint...")
-        success, response = self.run_test("Exercises GET /api/exercises - returns 8 seeded exercises", "GET", "api/exercises", 200)
+        success, response = self.run_test("Exercises GET /api/exercises - returns 26 exercises", "GET", "api/exercises", 200)
         
-        # Verify we got the expected 8 exercises
-        if success and isinstance(response, list) and len(response) >= 8:
-            print(f"   ✅ Found {len(response)} exercises (expected 8+)")
-            # Check for Italian exercise names
-            italian_exercises = [ex for ex in response if any(word in ex.get('nome', '').lower() for word in ['bicipiti', 'tricipiti', 'petto', 'spalle', 'schiena', 'addome', 'gambe', 'cardio'])]
-            print(f"   ✅ Found {len(italian_exercises)} Italian-named exercises")
-            return True
+        # Verify we got the expected 26 exercises
+        if success and isinstance(response, list):
+            print(f"   ✅ Found {len(response)} exercises")
+            if len(response) >= 26:
+                print(f"   ✅ Expected 26+ exercises, got {len(response)}")
+                return True
+            else:
+                return self.log_test("Exercises count validation", False, None, f"Expected 26+ exercises, got {len(response)}")
         elif success:
-            return self.log_test("Exercises count validation", False, None, f"Expected 8+ exercises, got {len(response) if isinstance(response, list) else 0}")
+            return self.log_test("Exercises count validation", False, None, f"Expected list of exercises, got {type(response)}")
         return success
 
     def test_plans_endpoints(self):
@@ -271,10 +276,10 @@ class WaltGoatAPITester:
 
     def run_all_tests(self):
         """Run all API tests"""
-        print("🐐 Starting Walt the GOAT API Tests...")
+        print("🐐 Starting Walt the GOAT API Tests (AUTH_DISABLED Mode)...")
         print(f"Testing against: {self.base_url}")
-        print(f"Using test user: {self.user_id}")
-        print(f"Using session token: {self.session_token}")
+        print(f"Using demo user: {self.user_id}")
+        print("Authentication: DISABLED - Testing free access")
         
         # Start with health check
         if not self.test_health_check():
@@ -285,7 +290,7 @@ class WaltGoatAPITester:
         
         # Run all endpoint tests
         tests = [
-            self.test_auth_me_with_token,
+            self.test_auth_me_without_token,
             self.test_profile_endpoints,
             self.test_walks_endpoints,
             self.test_circuits_endpoints,

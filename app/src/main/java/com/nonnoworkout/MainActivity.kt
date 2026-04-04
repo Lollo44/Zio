@@ -8,13 +8,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.nonnoworkout.ui.NonnoWorkoutApp
-import com.nonnoworkout.ui.theme.NonnoWorkoutTheme
+import com.nonnoworkout.ui.theme.WalterTheWalkerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            NonnoWorkoutTheme {
+            WalterTheWalkerTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     NonnoWorkoutApp()
                 }
@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun AppPreview() {
-    NonnoWorkoutTheme {
+    WalterTheWalkerTheme {
         NonnoWorkoutApp()
     }
 }

@@ -1,0 +1,22 @@
+{
+  "name": "Walter the Walker",
+  "short_name": "WtW",
+  "description": "Fitness tracker per senior - Camminata e circuiti pesi",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1E88E5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%231E88E5'/><text x='96' y='120' font-size='100' text-anchor='middle' fill='white'>🚶</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%231E88E5'/><text x='256' y='320' font-size='260' text-anchor='middle' fill='white'>🚶</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

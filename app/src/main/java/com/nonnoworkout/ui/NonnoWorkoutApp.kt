@@ -84,7 +84,13 @@ fun NonnoWorkoutApp() {
             composable("onboarding") {
                 OnboardingScreen(onCreatePlan = { navController.navigate(TopLevelDestination.Home.route) })
             }
-            composable(TopLevelDestination.Home.route) { HomeScreen() }
+            composable(TopLevelDestination.Home.route) {
+                HomeScreen(
+                    onStartWalk = { navController.navigate(TopLevelDestination.Walk.route) },
+                    onStartCircuit = { navController.navigate(TopLevelDestination.Circuit.route) },
+                    onViewStats = { navController.navigate(TopLevelDestination.Stats.route) }
+                )
+            }
             composable(TopLevelDestination.Walk.route) { WalkScreen() }
             composable(TopLevelDestination.Circuit.route) { CircuitScreen() }
             composable(TopLevelDestination.Plans.route) { PlansScreen() }

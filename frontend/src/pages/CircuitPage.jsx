@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import WaltTheGoat from '../components/mascot/WaltTheGoat';
 import BigButton from '../components/ui/BigButton';
-import { Play, Square, Check, ChevronDown, ChevronUp, Timer, TrendingUp, TrendingDown, Minus, Edit3, Save } from 'lucide-react';
+import { Play, Square, Check, ChevronDown, ChevronUp, Timer, TrendingUp, TrendingDown, Minus, Edit3, Save, RefreshCw, Info, X } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -14,6 +14,8 @@ const CircuitPage = () => {
   const [history, setHistory] = useState([]);
   const [activePlan, setActivePlan] = useState(null);
   const [editingPlan, setEditingPlan] = useState(null);
+  const [swapModal, setSwapModal] = useState(null); // { exId, alternatives: [] }
+  const [exerciseInfo, setExerciseInfo] = useState(null); // For showing detailed info
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
 
@@ -61,6 +63,9 @@ const CircuitPage = () => {
       newLogs[exId] = {
         nome: ex.nome,
         exercise_id: ex.exercise_id || exId,
+        categoria: ex.categoria || '',
+        descrizione: ex.descrizione || ex.descrizione_tecnica || '',
+        note: ex.note || ex.note_sicurezza || '',
         sets,
         piano_serie: numSerie,
         piano_ripetizioni: reps,
@@ -166,6 +171,58 @@ const CircuitPage = () => {
     } catch (err) { console.error(err); }
   };
 
+  // Smart Swap - fetch alternatives for an exercise
+  const fetchAlternatives = async (exId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/exercises/${exId}/alternatives`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setSwapModal({ exId, original: data.esercizio_originale, alternatives: data.alternative });
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  // Swap exercise in logs
+  const swapExercise = (oldExId, newEx) => {
+    setLogs(prev => {
+      const newLogs = { ...prev };
+      const oldLog = newLogs[oldExId];
+      const numSerie = newEx.serie_default || oldLog.piano_serie || 3;
+      const reps = newEx.ripetizioni_default || oldLog.piano_ripetizioni || 12;
+      const peso = newEx.peso_default || 0;
+      
+      // Remove old exercise
+      delete newLogs[oldExId];
+      
+      // Add new exercise with same position
+      const newExId = newEx.exercise_id;
+      const sets = [];
+      for (let i = 0; i < numSerie; i++) {
+        sets.push({ set_number: i + 1, ripetizioni: reps, peso_kg: peso, completato: false });
+      }
+      newLogs[newExId] = {
+        nome: newEx.nome,
+        exercise_id: newExId,
+        categoria: newEx.categoria,
+        descrizione: newEx.descrizione_tecnica,
+        note: newEx.note_sicurezza,
+        sets,
+        piano_serie: numSerie,
+        piano_ripetizioni: reps,
+        piano_peso_kg: peso,
+      };
+      return newLogs;
+    });
+    setSwapModal(null);
+  };
+
+  // Show exercise info modal
+  const showExerciseInfo = (ex) => {
+    // Find full exercise details from exercises list
+    const fullEx = exercises.find(e => e.exercise_id === ex.exercise_id);
+    setExerciseInfo(fullEx || ex);
+  };
+
   const totalSetsCompleted = Object.values(logs).reduce((acc, l) => acc + l.sets.filter(s => s.completato).length, 0);
   const totalSets = Object.values(logs).reduce((acc, l) => acc + l.sets.length, 0);
 
@@ -231,6 +288,7 @@ const CircuitPage = () => {
                   {allComplete && <Check size={20} className="text-secondary" />}
                   <div className="text-left">
                     <p className={`font-bold ${allComplete ? 'text-secondary' : 'text-text-primary'}`}>{log.nome}</p>
+                    {log.categoria && <p className="text-primary text-xs">{log.categoria}</p>}
                     <p className="text-text-secondary text-sm">{completedSets}/{log.sets.length} serie</p>
                   </div>
                 </div>
@@ -248,6 +306,34 @@ const CircuitPage = () => {
 
               {isExpanded && (
                 <div className="px-4 pb-4 space-y-2">
+                  {/* Exercise description if available */}
+                  {log.descrizione && (
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
+                      <p className="text-blue-300 text-xs">{log.descrizione}</p>
+                      {log.note && <p className="text-yellow-400/80 text-xs mt-1">⚠️ {log.note}</p>}
+                    </div>
+                  )}
+
+                  {/* Smart actions row */}
+                  {status === 'idle' && (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); fetchAlternatives(exId); }}
+                        className="flex-1 flex items-center justify-center gap-1 h-9 bg-surface-highlight border border-border rounded-xl text-text-secondary text-xs hover:border-primary/50 transition-colors"
+                        data-testid={`swap-${exId}`}
+                      >
+                        <RefreshCw size={12} /> Sostituisci
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); showExerciseInfo(log); }}
+                        className="flex items-center justify-center gap-1 h-9 px-4 bg-surface-highlight border border-border rounded-xl text-text-secondary text-xs hover:border-primary/50 transition-colors"
+                        data-testid={`info-${exId}`}
+                      >
+                        <Info size={12} /> Info
+                      </button>
+                    </div>
+                  )}
+
                   {/* Plan reference */}
                   {log.piano_serie && (
                     <div className="bg-surface-highlight rounded-xl p-2 text-text-secondary text-xs flex items-center justify-between">
@@ -412,6 +498,109 @@ const CircuitPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Smart Swap Modal */}
+      {swapModal && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-end justify-center" onClick={() => setSwapModal(null)}>
+          <div className="bg-surface border-t border-border rounded-t-3xl w-full max-w-md max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-surface p-4 border-b border-border flex items-center justify-between">
+              <div>
+                <h3 className="text-text-primary font-bold">Sostituisci esercizio</h3>
+                <p className="text-text-secondary text-sm">Scegli un'alternativa per {swapModal.original?.nome}</p>
+              </div>
+              <button onClick={() => setSwapModal(null)} className="text-text-secondary"><X size={20} /></button>
+            </div>
+            <div className="p-4 space-y-2">
+              {swapModal.alternatives?.length > 0 ? (
+                swapModal.alternatives.map((alt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => swapExercise(swapModal.exId, alt)}
+                    className="w-full bg-surface-highlight border border-border rounded-2xl p-4 text-left hover:border-primary/50 transition-colors"
+                    data-testid={`swap-option-${i}`}
+                  >
+                    <p className="text-text-primary font-bold">{alt.nome}</p>
+                    <p className="text-primary text-xs">{alt.categoria}</p>
+                    <p className="text-text-secondary text-xs mt-1 line-clamp-2">{alt.descrizione_tecnica}</p>
+                    <p className="text-text-secondary text-xs mt-1">
+                      {alt.serie_default}x{alt.ripetizioni_default} · {alt.peso_default > 0 ? `${alt.peso_default}kg` : 'Corpo libero'}
+                    </p>
+                  </button>
+                ))
+              ) : (
+                <p className="text-text-secondary text-center py-4">Nessuna alternativa disponibile</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exercise Info Modal */}
+      {exerciseInfo && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-6" onClick={() => setExerciseInfo(null)}>
+          <div className="bg-surface border border-border rounded-3xl w-full max-w-md max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-surface p-4 border-b border-border flex items-center justify-between">
+              <div>
+                <h3 className="text-text-primary font-bold">{exerciseInfo.nome}</h3>
+                <p className="text-primary text-sm">{exerciseInfo.categoria}</p>
+              </div>
+              <button onClick={() => setExerciseInfo(null)} className="text-text-secondary"><X size={20} /></button>
+            </div>
+            <div className="p-4 space-y-4">
+              {exerciseInfo.descrizione_tecnica && (
+                <div>
+                  <p className="text-text-secondary text-xs font-bold mb-1">Esecuzione</p>
+                  <p className="text-text-primary text-sm">{exerciseInfo.descrizione_tecnica}</p>
+                </div>
+              )}
+              {exerciseInfo.gruppo_muscolare && (
+                <div>
+                  <p className="text-text-secondary text-xs font-bold mb-1">Muscoli target</p>
+                  <div className="flex flex-wrap gap-1">
+                    {(Array.isArray(exerciseInfo.gruppo_muscolare) ? exerciseInfo.gruppo_muscolare : [exerciseInfo.gruppo_muscolare]).map((m, i) => (
+                      <span key={i} className="bg-primary/20 text-primary rounded-full px-2 py-0.5 text-xs">{m}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {exerciseInfo.attrezzi && (
+                <div>
+                  <p className="text-text-secondary text-xs font-bold mb-1">Attrezzi</p>
+                  <p className="text-text-primary text-sm">{Array.isArray(exerciseInfo.attrezzi) ? exerciseInfo.attrezzi.join(', ') : exerciseInfo.attrezzi}</p>
+                </div>
+              )}
+              {exerciseInfo.note_sicurezza && (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3">
+                  <p className="text-yellow-400 text-xs font-bold mb-1">⚠️ Sicurezza</p>
+                  <p className="text-yellow-300 text-sm">{exerciseInfo.note_sicurezza}</p>
+                </div>
+              )}
+              {exerciseInfo.varianti && (
+                <div>
+                  <p className="text-text-secondary text-xs font-bold mb-1">Varianti</p>
+                  <div className="space-y-1">
+                    {Object.entries(exerciseInfo.varianti).map(([level, desc]) => (
+                      <div key={level} className="flex gap-2 text-sm">
+                        <span className={`font-bold ${level === 'facile' ? 'text-green-400' : level === 'medio' ? 'text-yellow-400' : 'text-red-400'}`}>
+                          {level.charAt(0).toUpperCase() + level.slice(1)}:
+                        </span>
+                        <span className="text-text-secondary">{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="bg-surface-highlight rounded-xl p-3">
+                <p className="text-text-secondary text-xs font-bold mb-1">Default</p>
+                <p className="text-text-primary text-sm">
+                  {exerciseInfo.serie_default || 3}x{exerciseInfo.ripetizioni_default || 12}
+                  {exerciseInfo.peso_default > 0 ? ` @ ${exerciseInfo.peso_default}kg` : ' (corpo libero)'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}

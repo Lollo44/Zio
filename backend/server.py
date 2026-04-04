@@ -12,11 +12,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+AUTH_DISABLED = os.environ.get("AUTH_DISABLED", "false").lower() == "true"
+
+def get_allowed_origins():
+    """Get CORS allowed origins from environment or return default localhost origins."""
+    origins_str = os.environ.get("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://localhost:3011")
+    return [origin.strip() for origin in origins_str.split(",")]
+
 app = FastAPI(title="Walter the Walker API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,6 +33,17 @@ MONGO_URL = os.environ.get("MONGO_URL")
 DB_NAME = os.environ.get("DB_NAME")
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
+
+def get_cookie_settings():
+    """Use secure cookies in production; relax for local HTTP development."""
+    env = os.environ.get("ENV", "development").lower()
+    cookie_secure = os.environ.get("COOKIE_SECURE")
+    if cookie_secure is not None:
+        secure = cookie_secure.lower() == "true"
+    else:
+        secure = env == "production"
+    samesite = "none" if secure else "lax"
+    return secure, samesite
 
 # ===== MODELS =====
 
@@ -81,7 +99,27 @@ class PlanExerciseUpdate(BaseModel):
 
 # ===== AUTH HELPERS =====
 
+async def get_demo_user():
+    """Return or create a demo user when auth is disabled."""
+    demo_email = "demo@local"
+    user_doc = await db.users.find_one({"email": demo_email}, {"_id": 0})
+    if user_doc:
+        return user_doc
+    user_id = "user_demo"
+    user_doc = {
+        "user_id": user_id,
+        "email": demo_email,
+        "name": "Demo User",
+        "picture": "",
+        "profile_complete": True,
+        "created_at": datetime.now(timezone.utc),
+    }
+    await db.users.insert_one(user_doc.copy())
+    return user_doc
+
 async def get_current_user(request: Request):
+    if AUTH_DISABLED:
+        return await get_demo_user()
     session_token = request.cookies.get("session_token")
     if not session_token:
         auth_header = request.headers.get("Authorization")
@@ -108,6 +146,8 @@ async def get_current_user(request: Request):
 
 @app.post("/api/auth/session")
 async def create_session(request: Request, response: Response):
+    if AUTH_DISABLED:
+        return await get_demo_user()
     body = await request.json()
     session_id = body.get("session_id")
     if not session_id:
@@ -133,12 +173,15 @@ async def create_session(request: Request, response: Response):
         await db.users.insert_one({"user_id": user_id, "email": email, "name": name, "picture": picture, "profile_complete": False, "created_at": datetime.now(timezone.utc)})
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
     await db.user_sessions.insert_one({"user_id": user_id, "session_token": session_token, "expires_at": expires_at, "created_at": datetime.now(timezone.utc)})
-    response.set_cookie(key="session_token", value=session_token, httponly=True, secure=True, samesite="none", path="/", max_age=7*24*3600)
+    secure, samesite = get_cookie_settings()
+    response.set_cookie(key="session_token", value=session_token, httponly=True, secure=secure, samesite=samesite, path="/", max_age=7*24*3600)
     user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     return user_doc
 
 @app.get("/api/auth/me")
 async def auth_me(request: Request):
+    if AUTH_DISABLED:
+        return await get_demo_user()
     return await get_current_user(request)
 
 @app.post("/api/auth/logout")
@@ -146,7 +189,8 @@ async def logout(request: Request, response: Response):
     session_token = request.cookies.get("session_token")
     if session_token:
         await db.user_sessions.delete_many({"session_token": session_token})
-    response.delete_cookie(key="session_token", path="/", samesite="none", secure=True)
+    secure, samesite = get_cookie_settings()
+    response.delete_cookie(key="session_token", path="/", samesite=samesite, secure=secure)
     return {"message": "Logout effettuato"}
 
 # ===== PROFILE =====
@@ -233,26 +277,53 @@ async def create_circuit(request: Request, circuit: CircuitSession):
 
 # ===== EXERCISES =====
 
-DEFAULT_EXERCISES = [
-    {"exercise_id": "ex_bicipiti", "nome": "Bicipiti", "tipo": "pesi", "gruppo_muscolare": "braccia", "descrizione": "Curl con manubri", "serie_default": 3, "ripetizioni_default": 12, "peso_default": 2.0},
-    {"exercise_id": "ex_tricipiti", "nome": "Tricipiti", "tipo": "pesi", "gruppo_muscolare": "braccia", "descrizione": "Estensioni tricipiti", "serie_default": 3, "ripetizioni_default": 12, "peso_default": 2.0},
-    {"exercise_id": "ex_petto", "nome": "Petto", "tipo": "pesi", "gruppo_muscolare": "petto", "descrizione": "Chest press leggero", "serie_default": 3, "ripetizioni_default": 10, "peso_default": 3.0},
-    {"exercise_id": "ex_spalle", "nome": "Spalle", "tipo": "pesi", "gruppo_muscolare": "spalle", "descrizione": "Alzate laterali", "serie_default": 3, "ripetizioni_default": 12, "peso_default": 1.5},
-    {"exercise_id": "ex_schiena", "nome": "Schiena", "tipo": "pesi", "gruppo_muscolare": "schiena", "descrizione": "Rematore con manubri", "serie_default": 3, "ripetizioni_default": 10, "peso_default": 3.0},
-    {"exercise_id": "ex_addome", "nome": "Addome", "tipo": "corpo_libero", "gruppo_muscolare": "core", "descrizione": "Crunch leggeri", "serie_default": 2, "ripetizioni_default": 15, "peso_default": 0},
-    {"exercise_id": "ex_gambe", "nome": "Gambe", "tipo": "pesi", "gruppo_muscolare": "gambe", "descrizione": "Squat assistito", "serie_default": 3, "ripetizioni_default": 10, "peso_default": 0},
-    {"exercise_id": "ex_cardio", "nome": "Cardio leggero", "tipo": "cardio", "gruppo_muscolare": "cardio", "descrizione": "Cyclette o camminata veloce", "serie_default": 1, "ripetizioni_default": 1, "peso_default": 0},
-]
+from exercises_database import ESERCIZI_DATABASE, ELASTICI_KG_MAPPING, CATEGORIE
 
 @app.get("/api/exercises")
-async def get_exercises(request: Request):
+async def get_exercises(request: Request, categoria: Optional[str] = None):
     await get_current_user(request)
-    exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
-    if not exercises:
-        for ex in DEFAULT_EXERCISES:
+    # Seed database if empty
+    count = await db.exercises.count_documents({})
+    if count == 0:
+        for ex in ESERCIZI_DATABASE:
             await db.exercises.insert_one(ex.copy())
-        exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
+    # Query with optional category filter
+    query = {"categoria": categoria} if categoria else {}
+    exercises = await db.exercises.find(query, {"_id": 0}).to_list(100)
     return exercises
+
+@app.get("/api/exercises/categories")
+async def get_exercise_categories(request: Request):
+    await get_current_user(request)
+    return {"categorie": CATEGORIE}
+
+@app.get("/api/exercises/{exercise_id}")
+async def get_exercise_detail(request: Request, exercise_id: str):
+    await get_current_user(request)
+    exercise = await db.exercises.find_one({"exercise_id": exercise_id}, {"_id": 0})
+    if not exercise:
+        raise HTTPException(status_code=404, detail="Esercizio non trovato")
+    return exercise
+
+@app.get("/api/exercises/{exercise_id}/alternatives")
+async def get_exercise_alternatives(request: Request, exercise_id: str):
+    """Get alternative exercises for smart swap"""
+    await get_current_user(request)
+    exercise = await db.exercises.find_one({"exercise_id": exercise_id}, {"_id": 0})
+    if not exercise:
+        raise HTTPException(status_code=404, detail="Esercizio non trovato")
+    # Find alternatives in same category, excluding current exercise
+    categoria = exercise.get("categoria")
+    alternatives = await db.exercises.find(
+        {"categoria": categoria, "exercise_id": {"$ne": exercise_id}},
+        {"_id": 0}
+    ).to_list(5)
+    return {"esercizio_originale": exercise, "alternative": alternatives}
+
+@app.get("/api/elastici")
+async def get_elastici_mapping(request: Request):
+    await get_current_user(request)
+    return ELASTICI_KG_MAPPING
 
 # ===== PLANS =====
 
@@ -274,38 +345,90 @@ async def create_plan(request: Request, plan: PlanCreate):
     plan_doc.pop("_id", None)
     return plan_doc
 
+class WorkoutGeneratorInput(BaseModel):
+    energia: int = 5  # 1-10
+    focus_muscolare: Optional[List[str]] = None  # e.g., ["Gambe", "Core"]
+    dolori_articolari: Optional[List[str]] = None  # e.g., ["ginocchia", "spalle"]
+
 @app.post("/api/plans/generate")
-async def generate_plan(request: Request):
+async def generate_plan(request: Request, inputs: Optional[WorkoutGeneratorInput] = None):
     user = await get_current_user(request)
     livello = user.get("livello", "Principiante")
     giorni = user.get("giorni_disponibili", ["Lunedì", "Mercoledì", "Venerdì"])
     eta = user.get("eta", 72)
-    exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
-    if not exercises:
-        for ex in DEFAULT_EXERCISES:
+    
+    # Seed exercises if needed
+    count = await db.exercises.count_documents({})
+    if count == 0:
+        for ex in ESERCIZI_DATABASE:
             await db.exercises.insert_one(ex.copy())
-        exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
+    
+    exercises = await db.exercises.find({}, {"_id": 0}).to_list(100)
+    
+    # Apply energy level adjustments
+    energia = inputs.energia if inputs else 5
+    serie_mod = -1 if energia < 4 else (1 if energia > 7 else 0)
+    
+    # Filter by focus if specified
+    focus = inputs.focus_muscolare if inputs else None
+    dolori = inputs.dolori_articolari if inputs and inputs.dolori_articolari else []
+    
+    # Exercises to avoid based on joint pain
+    avoid_exercises = set()
+    if "ginocchia" in dolori:
+        avoid_exercises.update(["ex_squat_sedia", "ex_affondi_supporto", "ex_step_up"])
+    if "spalle" in dolori:
+        avoid_exercises.update(["ex_shoulder_press", "ex_alzate_laterali", "ex_alzate_frontali"])
+    if "schiena" in dolori:
+        avoid_exercises.update(["ex_rematore_manubri", "ex_superman"])
+    
     plan_giorni = []
-    weight_exercises = [e for e in exercises if e["tipo"] == "pesi"]
     for i, giorno in enumerate(giorni):
         if i % 2 == 0:
-            dur = 30 if livello == "Principiante" else 45
-            dist = 2.0 if livello == "Principiante" else 3.5
+            # Walking day
+            dur = 25 if energia < 4 else (35 if energia > 7 else 30)
+            if livello != "Principiante":
+                dur += 10
+            dist = round(dur * 0.08, 1)  # ~5 km/h average
             plan_giorni.append({
                 "giorno": giorno, "tipo": "camminata",
                 "attivita": [{"nome": "Camminata", "durata_minuti": dur, "distanza_km": dist, "note": "Passo moderato"}],
             })
         else:
-            selected = weight_exercises[:5] if len(weight_exercises) >= 5 else weight_exercises
-            serie_mult = 2 if livello == "Principiante" else 3
+            # Circuit day - select exercises by category rotation
+            if focus:
+                available = [e for e in exercises 
+                           if e.get("categoria") in focus 
+                           and e.get("exercise_id") not in avoid_exercises]
+            else:
+                # Default rotation through categories
+                categorie_rotazione = ["Gambe", "Core", "Braccia", "Spalle", "Petto", "Schiena"]
+                cat_oggi = categorie_rotazione[(i // 2) % len(categorie_rotazione)]
+                cat_secondaria = categorie_rotazione[((i // 2) + 1) % len(categorie_rotazione)]
+                available = [e for e in exercises 
+                           if e.get("categoria") in [cat_oggi, cat_secondaria, "Cardio"]
+                           and e.get("exercise_id") not in avoid_exercises]
+            
+            # Select exercises based on level
+            num_esercizi = 4 if livello == "Principiante" else 6
+            selected = available[:num_esercizi] if len(available) >= num_esercizi else available
+            
+            # Adjust series based on level and energy
+            base_serie = 2 if livello == "Principiante" else 3
+            serie_finale = max(1, base_serie + serie_mod)
+            
             plan_giorni.append({
                 "giorno": giorno, "tipo": "circuito",
                 "attivita": [{
-                    "exercise_id": ex["exercise_id"], "nome": ex["nome"],
-                    "serie": min(serie_mult, ex.get("serie_default", 2)),
-                    "ripetizioni": min(10, ex.get("ripetizioni_default", 10)),
-                    "peso_kg": ex.get("peso_default", 1.0),
-                    "note": ex.get("descrizione", ""),
+                    "exercise_id": ex["exercise_id"], 
+                    "nome": ex["nome"],
+                    "categoria": ex.get("categoria", ""),
+                    "serie": min(serie_finale, ex.get("serie_default", 3)),
+                    "ripetizioni": ex.get("ripetizioni_default", 12),
+                    "peso_kg": ex.get("peso_default", 0),
+                    "descrizione": ex.get("descrizione_tecnica", ""),
+                    "note": ex.get("note_sicurezza", ""),
+                    "varianti": ex.get("varianti", {}),
                 } for ex in selected],
             })
     plan_doc = {
@@ -577,3 +700,10 @@ async def check_sfide_progress(request: Request):
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "app": "Walt the GOAT"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", "8000"))
+    uvicorn.run("server:app", host="0.0.0.0", port=port, reload=True)

@@ -2,16 +2,21 @@
 # Script to run both backend and frontend for local network access
 
 # Discover host IP
-HOST_IP=$(hostname -I | awk '{print $1}')
-if [ -z "$HOST_IP" ]; then
-    HOST_IP="0.0.0.0"
+if [ -n "$CODESPACES" ]; then
+    echo "Codespaces environment detected. You will need to use the forwarded port URLs."
+    HOST_IP="localhost"
+else
+    HOST_IP=$(hostname -I | awk '{print $1}')
+    if [ -z "$HOST_IP" ]; then
+        HOST_IP="0.0.0.0"
+    fi
 fi
 echo "Starting services on IP: $HOST_IP"
 
 # 1. Start Backend on all interfaces (port 8000)
 cd backend || exit 1
 export DB_NAME="walter_db"
-export MONGO_URL="mongodb://localhost:27017"
+export MONGO_URL="mongodb://127.0.0.1:27017"
 export AUTH_DISABLED="true"
 python3 -m uvicorn server:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!

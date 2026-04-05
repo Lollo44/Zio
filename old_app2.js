@@ -12,7 +12,6 @@ import ProfilePage from './pages/ProfilePage';
 import SfidePage from './pages/SfidePage';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
-const AUTH_DISABLED = process.env.REACT_APP_AUTH_DISABLED === 'true';
 
 const ProtectedRoute = ({ children, user, setUser }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(user ? true : null);
@@ -20,10 +19,6 @@ const ProtectedRoute = ({ children, user, setUser }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (AUTH_DISABLED) {
-      setIsAuthenticated(true);
-      return;
-    }
     if (location.state?.user) {
       setUser(location.state.user);
       setIsAuthenticated(true);
@@ -60,21 +55,26 @@ const ProtectedRoute = ({ children, user, setUser }) => {
 };
 
 function AppRouter() {
-  const [user, setUser] = useState(AUTH_DISABLED ? { user_id: 'user_demo', name: 'Demo User', profile_complete: true } : null);
+  const [user, setUser] = useState(null);
   const location = useLocation();
 
+  // CRITICAL: Detect session_id synchronously during render
+  if (location.hash?.includes('session_id=')) {
+    return <AuthCallback />;
+  }
+
   const handleLogout = () => {
-    window.location.href = '/home';
+    setUser(null);
+    window.location.href = '/login';
   };
 
-  const noNavPages = ['/login', '/onboarding', '/auth/callback'];
-  const showNav = !noNavPages.includes(location.pathname);
+  const noNavPages = ['/login', '/onboarding'];
+  const showNav = user && !noNavPages.includes(location.pathname) && !location.hash?.includes('session_id=');
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-background relative">
       <Routes>
-        <Route path="/login" element={<Navigate to="/home" replace />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/login" element={user ? <Navigate to="/home" replace /> : <LoginPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/home" element={<ProtectedRoute user={user} setUser={setUser}><HomePage user={user} /></ProtectedRoute>} />
         <Route path="/walk" element={<ProtectedRoute user={user} setUser={setUser}><WalkPage /></ProtectedRoute>} />
@@ -82,7 +82,7 @@ function AppRouter() {
         <Route path="/stats" element={<ProtectedRoute user={user} setUser={setUser}><StatsPage /></ProtectedRoute>} />
         <Route path="/sfide" element={<ProtectedRoute user={user} setUser={setUser}><SfidePage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute user={user} setUser={setUser}><ProfilePage user={user} onLogout={handleLogout} /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/home" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       {showNav && <BottomNav />}
     </div>

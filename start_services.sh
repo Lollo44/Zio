@@ -12,6 +12,7 @@ echo "Starting services on IP: $HOST_IP"
 cd backend || exit 1
 export DB_NAME="walter_db"
 export MONGO_URL="mongodb://localhost:27017"
+export AUTH_DISABLED="true"
 python3 -m uvicorn server:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 cd ..

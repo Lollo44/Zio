@@ -15,52 +15,12 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 const AUTH_DISABLED = process.env.REACT_APP_AUTH_DISABLED === 'true';
 
 const ProtectedRoute = ({ children, user, setUser }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(user ? true : null);
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (AUTH_DISABLED) {
-      setIsAuthenticated(true);
-      return;
-    }
-    if (location.state?.user) {
-      setUser(location.state.user);
-      setIsAuthenticated(true);
-      return;
-    }
-    if (user) {
-      setIsAuthenticated(true);
-      return;
-    }
-    const checkAuth = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
-        if (!response.ok) throw new Error('Not authenticated');
-        const userData = await response.json();
-        setUser(userData);
-        setIsAuthenticated(true);
-      } catch {
-        setIsAuthenticated(false);
-        navigate('/login', { replace: true });
-      }
-    };
-    checkAuth();
-  }, [user, location, navigate, setUser]);
-
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-  if (isAuthenticated === false) return null;
+  // Auth disabled - allow free access
   return children;
 };
 
 function AppRouter() {
-  const [user, setUser] = useState(AUTH_DISABLED ? { user_id: 'user_demo', name: 'Demo User', profile_complete: true } : null);
+  const [user, setUser] = useState({ user_id: 'user_demo', name: 'Demo User', profile_complete: true });
   const location = useLocation();
 
   const handleLogout = () => {

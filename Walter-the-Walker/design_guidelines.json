@@ -1,0 +1,132 @@
+{
+  "project_name": "Walter the Walker",
+  "identity": {
+    "tone": "Modern, Friendly, Elegant, Motivating, Non-patronizing",
+    "target_audience": "Italian Seniors (70-75), Tech-comfortable",
+    "core_concept": "Dark elegant fitness tracker with a friendly Ram mascot (Walt)",
+    "language": "Italian"
+  },
+  "typography": {
+    "font_family_heading": "Manrope, sans-serif",
+    "font_family_body": "Inter, sans-serif",
+    "font_family_mascot": "Manrope, sans-serif",
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-extrabold tracking-tight",
+      "h2": "text-3xl md:text-4xl font-bold tracking-tight",
+      "h3": "text-2xl md:text-3xl font-bold",
+      "p": "text-base md:text-lg leading-relaxed",
+      "caption": "text-sm font-medium uppercase tracking-wider",
+      "button_text": "text-lg font-bold"
+    }
+  },
+  "colors": {
+    "theme": "dark",
+    "palette": {
+      "background": "#09090b",
+      "surface": "#18181b",
+      "surface_highlight": "#27272a",
+      "primary": "#fbbf24",
+      "primary_foreground": "#000000",
+      "secondary": "#10b981",
+      "secondary_foreground": "#ffffff",
+      "accent": "#f59e0b",
+      "text_primary": "#fafafa",
+      "text_secondary": "#a1a1aa",
+      "border": "#27272a",
+      "error": "#ef4444",
+      "success": "#10b981",
+      "mascot_fur": "#e4e4e7",
+      "mascot_horns": "#d97706"
+    }
+  },
+  "visual_enhancers": {
+    "border_radius": {
+      "card": "rounded-3xl",
+      "button": "rounded-full",
+      "input": "rounded-2xl"
+    },
+    "shadows": {
+      "card": "shadow-xl shadow-black/20",
+      "button": "shadow-lg shadow-amber-500/20",
+      "floating": "shadow-2xl shadow-black/50"
+    },
+    "gradients": {
+      "primary": "bg-gradient-to-r from-amber-400 to-amber-500",
+      "surface": "bg-gradient-to-b from-zinc-800/50 to-zinc-900/50",
+      "glow": "bg-gradient-to-tr from-amber-500/20 via-transparent to-transparent"
+    },
+    "glassmorphism": {
+      "nav": "bg-black/80 backdrop-blur-xl border-t border-white/10"
+    }
+  },
+  "layout_strategies": {
+    "mobile_container": "max-w-md mx-auto min-h-screen bg-background relative overflow-hidden",
+    "bento_grid": "grid grid-cols-2 gap-4 p-4",
+    "card_padding": "p-6",
+    "section_spacing": "space-y-8"
+  },
+  "components": [
+    {
+      "name": "MascotAvatar",
+      "path": "src/components/mascot/MascotAvatar.jsx",
+      "description": "Walt the Goat animated avatar. Shows different states: Idle, Walking, Flexing, Cheering.",
+      "props": ["state", "size", "className"],
+      "styling": "relative overflow-hidden"
+    },
+    {
+      "name": "StatCard",
+      "path": "src/components/ui/StatCard.jsx",
+      "description": "High contrast card for key metrics (Steps, Distance, etc).",
+      "styling": "bg-surface border border-border rounded-3xl p-6 flex flex-col items-start gap-2 hover:border-primary/50 transition-colors"
+    },
+    {
+      "name": "BigButton",
+      "path": "src/components/ui/BigButton.jsx",
+      "description": "Primary action button, large tap target for seniors.",
+      "styling": "h-16 w-full bg-primary text-primary-foreground text-xl font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
+    },
+    {
+      "name": "BottomNav",
+      "path": "src/components/layout/BottomNav.jsx",
+      "description": "Fixed bottom navigation with large icons and labels.",
+      "styling": "fixed bottom-0 left-0 right-0 h-20 bg-black/90 backdrop-blur-lg border-t border-white/10 flex justify-around items-center z-50 pb-2"
+    }
+  ],
+  "assets": {
+    "mascot_instructions": "Since specific mascot images were not found, use a 'placeholder' approach with CSS composition or SVG if possible. Alternatively, use a high-quality emoji combination (🐏) styled elegantly, or a placeholder div with the text 'Walt' until assets are generated. The guide assumes we build the structure for the mascot.",
+    "images": [
+      {
+        "category": "Mascot - Idle",
+        "url": "https://placehold.co/400x400/18181b/fbbf24?text=Walt+Idle",
+        "alt": "Walt the Goat Idle"
+      },
+      {
+        "category": "Mascot - Walking",
+        "url": "https://placehold.co/400x400/18181b/fbbf24?text=Walt+Walking",
+        "alt": "Walt the Goat Walking"
+      },
+      {
+        "category": "Mascot - Flexing",
+        "url": "https://placehold.co/400x400/18181b/fbbf24?text=Walt+Flexing",
+        "alt": "Walt the Goat Flexing"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. **Language**: All user-facing text MUST be in ITALIAN.",
+    "2. **Theme**: Enforce the Dark Elegant theme. No white backgrounds.",
+    "3. **Mascot**: 'Walt' is the heart of the app. He greets the user on the dashboard. He encourages them during workouts.",
+    "4. **Accessibility**: Although 'modern', ensure text size is legible (min 16px for body). Contrast ratios must be high (Amber on Black is good).",
+    "5. **PWA**: Ensure the layout is strictly mobile-first (max-w-md centered on desktop).",
+    "6. **Charts**: Use 'recharts' or Shadcn Charts. Style them to match the dark theme (Amber/Emerald lines).",
+    "7. **Navigation**: Use a persistent bottom bar for 'Home', 'Walk', 'Circuit', 'Profile'.",
+    "8. **Maps**: For GPS tracking, use 'leaflet' or 'react-leaflet' with a dark map tile provider (e.g., CartoDB Dark Matter)."
+  ],
+  "universal_guidelines": [
+    "Use 'lucide-react' for icons.",
+    "Use 'sonner' for toast notifications.",
+    "Use 'framer-motion' for smooth page transitions and mascot animations.",
+    "Do NOT use gradients for text (readability risk for seniors).",
+    "Ensure buttons have distinct 'active' states for feedback."
+  ]
+}

@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: #09090b;
+  color: #fafafa;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+
+input, select, textarea {
+  font-family: 'DM Sans', sans-serif;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.4); }
+}
+
+@keyframes walk-cycle {
+  0% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(4px) rotate(3deg); }
+  50% { transform: translateX(0) rotate(0deg); }
+  75% { transform: translateX(-4px) rotate(-3deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes flex-cycle {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.05) rotate(2deg); }
+  60% { transform: scale(1.08) rotate(-1deg); }
+}
+
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-walk { animation: walk-cycle 0.8s ease-in-out infinite; }
+.animate-flex { animation: flex-cycle 1.2s ease-in-out infinite; }

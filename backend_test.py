@@ -268,6 +268,45 @@ class WaltGoatAPITester:
         
         return success1 and success2 and success3
 
+    def test_route_planning_endpoints(self):
+        """Test new route planning endpoints"""
+        print("\n🔍 Testing Route Planning Endpoints...")
+        
+        # Test geocoding endpoint
+        success1, geocode_response = self.run_test("Routes GET /api/routes/geocode?q=Colosseo+Roma - geocode address", "GET", "api/routes/geocode?q=Colosseo+Roma", 200)
+        if success1 and isinstance(geocode_response, list):
+            print(f"   ✅ Geocoding returned {len(geocode_response)} results")
+            if len(geocode_response) > 0:
+                print(f"   ✅ First result: {geocode_response[0].get('nome', 'Unknown')}")
+        
+        # Test circular route generation
+        circular_route_data = {
+            "lat": 41.9028,
+            "lng": 12.4964,
+            "distanza_km": 3.0,
+            "tipo": "circolare"
+        }
+        success2, circular_response = self.run_test("Routes POST /api/routes/generate - generate circular route", "POST", "api/routes/generate", 200, circular_route_data)
+        if success2 and circular_response:
+            print(f"   ✅ Circular route generated: {circular_response.get('distanza_km', 0)} km, {circular_response.get('durata_stimata_min', 0)} min")
+            if circular_response.get('percorso') and len(circular_response['percorso']) > 0:
+                print(f"   ✅ Route has {len(circular_response['percorso'])} waypoints")
+        
+        # Test linear route generation (with destination)
+        linear_route_data = {
+            "lat": 41.9028,
+            "lng": 12.4964,
+            "distanza_km": 2.0,
+            "tipo": "lineare",
+            "destinazione_lat": 41.8902,
+            "destinazione_lng": 12.4922
+        }
+        success3, linear_response = self.run_test("Routes POST /api/routes/generate - generate linear route", "POST", "api/routes/generate", 200, linear_route_data)
+        if success3 and linear_response:
+            print(f"   ✅ Linear route generated: {linear_response.get('distanza_km', 0)} km, {linear_response.get('durata_stimata_min', 0)} min")
+        
+        return success1 and success2 and success3
+
     def test_logout(self):
         """Test logout"""
         print("\n🔍 Testing Logout...")
@@ -298,6 +337,7 @@ class WaltGoatAPITester:
             self.test_plans_endpoints,
             self.test_stats_endpoint,
             self.test_sfide_endpoints,
+            self.test_route_planning_endpoints,
             self.test_logout
         ]
         

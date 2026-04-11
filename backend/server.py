@@ -7,6 +7,7 @@ import os
 import uuid
 import httpx
 import random
+import math
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 
@@ -696,6 +697,112 @@ async def check_sfide_progress(request: Request):
         s["completata"] = completata
         updated.append(s)
     return updated
+
+# ===== ROUTE PLANNING =====
+
+class RouteRequest(BaseModel):
+    lat: float
+    lng: float
+    distanza_km: float
+    tipo: str  # "circolare" or "lineare"
+    destinazione_lat: Optional[float] = None
+    destinazione_lng: Optional[float] = None
+
+def point_at_distance(lat, lng, distance_km, bearing_deg):
+    """Calculate a point at a given distance and bearing from a start point."""
+    R = 6371.0
+    d = distance_km / R
+    brng = math.radians(bearing_deg)
+    lat1 = math.radians(lat)
+    lng1 = math.radians(lng)
+    lat2 = math.asin(math.sin(lat1) * math.cos(d) + math.cos(lat1) * math.sin(d) * math.cos(brng))
+    lng2 = lng1 + math.atan2(math.sin(brng) * math.sin(d) * math.cos(lat1), math.cos(d) - math.sin(lat1) * math.sin(lat2))
+    return round(math.degrees(lat2), 6), round(math.degrees(lng2), 6)
+
+async def get_osrm_route(coordinates):
+    """Get walking route from OSRM. coordinates = [(lng,lat), ...]"""
+    coords_str = ";".join([f"{c[0]},{c[1]}" for c in coordinates])
+    url = f"https://router.project-osrm.org/route/v1/foot/{coords_str}?overview=full&geometries=geojson&steps=false"
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.get(url)
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        if data.get("code") != "Ok" or not data.get("routes"):
+            return None
+        route = data["routes"][0]
+        geom = route["geometry"]["coordinates"]  # [[lng, lat], ...]
+        distance_m = route["distance"]
+        duration_s = route["duration"]
+        percorso = [{"lat": round(p[1], 6), "lng": round(p[0], 6)} for p in geom]
+        return {"percorso": percorso, "distanza_km": round(distance_m / 1000, 2), "durata_stimata_min": round(duration_s / 60, 1)}
+
+@app.post("/api/routes/generate")
+async def generate_route(request: Request, route_req: RouteRequest):
+    """Generate a walking route - circular or linear."""
+    await get_current_user(request)
+    
+    if route_req.tipo == "lineare":
+        if route_req.destinazione_lat is None or route_req.destinazione_lng is None:
+            raise HTTPException(status_code=400, detail="Destinazione mancante per percorso lineare")
+        coords = [(route_req.lng, route_req.lat), (route_req.destinazione_lng, route_req.destinazione_lat)]
+        result = await get_osrm_route(coords)
+        if not result:
+            raise HTTPException(status_code=502, detail="Impossibile calcolare il percorso")
+        return result
+    
+    # Circular route generation
+    target_km = route_req.distanza_km
+    tolerance_km = 0.3
+    best_result = None
+    best_diff = float('inf')
+    
+    # Adaptive radius: roads add ~40-60% vs straight-line, start conservative
+    road_expansion = 1.4
+    
+    for attempt in range(6):
+        radius_km = target_km / (2 * math.pi * road_expansion)
+        
+        # Generate 4-5 waypoints in a circle with some randomness
+        num_points = 4 if target_km < 5 else 5
+        rotation = random.uniform(0, 360)
+        
+        waypoints = [(route_req.lng, route_req.lat)]  # Start
+        for i in range(num_points):
+            bearing = rotation + (360 / num_points) * i
+            # Add ±10% randomness to radius for natural-looking routes
+            r = radius_km * random.uniform(0.90, 1.10)
+            lat2, lng2 = point_at_distance(route_req.lat, route_req.lng, r, bearing)
+            waypoints.append((lng2, lat2))
+        waypoints.append((route_req.lng, route_req.lat))  # Return to start
+        
+        result = await get_osrm_route(waypoints)
+        if result:
+            diff = abs(result["distanza_km"] - target_km)
+            if diff < best_diff:
+                best_diff = diff
+                best_result = result
+            if diff <= tolerance_km:
+                return result
+            # Adapt: scale road_expansion proportionally
+            actual_ratio = result["distanza_km"] / target_km
+            road_expansion *= actual_ratio
+    
+    if best_result:
+        return best_result
+    raise HTTPException(status_code=502, detail="Impossibile generare un percorso adatto")
+
+@app.get("/api/routes/geocode")
+async def geocode_address(request: Request, q: str):
+    """Geocode an address using Nominatim."""
+    await get_current_user(request)
+    url = f"https://nominatim.openstreetmap.org/search?q={q}&format=json&limit=5&addressdetails=1"
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(url, headers={"User-Agent": "WaltTheGoat/1.0"})
+        if resp.status_code != 200:
+            return []
+        results = resp.json()
+        return [{"nome": r.get("display_name", ""), "lat": float(r["lat"]), "lng": float(r["lon"])} for r in results]
 
 @app.get("/api/health")
 async def health():

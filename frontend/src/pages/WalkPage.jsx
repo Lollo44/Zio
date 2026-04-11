@@ -232,6 +232,18 @@ const WalkPage = () => {
         </div>
       </div>
 
+      {/* Live mini-map during active walk */}
+      {status === 'active' && positions.length > 2 && (
+        <div className="px-6 mb-4">
+          <div className="bg-surface border border-primary/20 rounded-3xl p-4">
+            <h3 className="text-text-primary font-bold text-sm mb-2 flex items-center gap-2">
+              <MapPin size={14} className="text-primary" /> Percorso in tempo reale
+            </h3>
+            <MapPreview percorso={positions.map(p => ({ lat: p.lat, lng: p.lng }))} />
+          </div>
+        </div>
+      )}
+
       {/* Controls */}
       <div className="px-6 mb-6 space-y-3">
         {status === 'idle' && (
@@ -262,6 +274,16 @@ const WalkPage = () => {
                 <StatCard icon={Gauge} label="Velocità" value={time > 0 ? (distance / (time / 3600)).toFixed(1) : '0'} unit="km/h" color="text-accent" />
               </div>
             </div>
+            {/* Show current route on map for user approval before saving */}
+            {positions.length > 1 && (
+              <div className="bg-surface border border-primary/30 rounded-3xl p-4">
+                <h3 className="text-text-primary font-bold mb-2 flex items-center gap-2">
+                  <MapPin size={16} className="text-primary" /> Percorso registrato
+                </h3>
+                <p className="text-text-secondary text-xs mb-3">Verifica il percorso prima di salvare</p>
+                <MapPreview percorso={positions.map(p => ({ lat: p.lat, lng: p.lng }))} />
+              </div>
+            )}
             <BigButton onClick={saveWalk} variant="secondary" data-testid="save-walk-btn"><Save size={20} /> Salva camminata</BigButton>
             <BigButton onClick={resetWalk} variant="outline" data-testid="discard-walk-btn"><X size={20} /> Annulla</BigButton>
           </div>
@@ -311,10 +333,16 @@ const WalkPage = () => {
 const MapPreview = ({ percorso }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const percorsoKey = JSON.stringify(percorso?.map(p => `${p.lat},${p.lng}`));
 
   useEffect(() => {
     if (!percorso || percorso.length < 2 || !mapRef.current) return;
-    if (mapInstanceRef.current) return;
+
+    // Clean up existing map instance before creating a new one
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
 
     const loadMap = async () => {
       try {
@@ -326,10 +354,12 @@ const MapPreview = ({ percorso }) => {
         );
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
         const latlngs = percorso.map(p => [p.lat, p.lng]);
-        L.polyline(latlngs, { color: '#fbbf24', weight: 4 }).addTo(map);
-        L.circleMarker(latlngs[0], { radius: 6, color: '#10b981', fillOpacity: 1 }).addTo(map);
-        L.circleMarker(latlngs[latlngs.length - 1], { radius: 6, color: '#ef4444', fillOpacity: 1 }).addTo(map);
-        map.fitBounds(latlngs);
+        L.polyline(latlngs, { color: '#fbbf24', weight: 4, opacity: 0.9, smoothFactor: 1.5 }).addTo(map);
+        // Start marker (green)
+        L.circleMarker(latlngs[0], { radius: 8, color: '#10b981', fillColor: '#10b981', fillOpacity: 1, weight: 2 }).addTo(map);
+        // End marker (red)
+        L.circleMarker(latlngs[latlngs.length - 1], { radius: 8, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1, weight: 2 }).addTo(map);
+        map.fitBounds(latlngs, { padding: [20, 20] });
         mapInstanceRef.current = map;
       } catch (err) {
         console.error('Map error:', err);
@@ -343,7 +373,7 @@ const MapPreview = ({ percorso }) => {
         mapInstanceRef.current = null;
       }
     };
-  }, [percorso]);
+  }, [percorsoKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <div ref={mapRef} className="w-full h-48 rounded-2xl bg-surface-highlight" data-testid="map-preview" />;
 };
